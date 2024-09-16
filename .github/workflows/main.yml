@@ -1,24 +1,43 @@
-name: CI
+# name: CI
 
-# on:
-#   push:
-#     # Pattern matched against refs/tags
-#     tags:
-#       - '*'           # Push events to every tag not containing /
 on:
   push:
     branches:
       - master
+
+name: Deploy Extension
+
 jobs:
-  build:
-    runs-on: ubuntu-20.04
+  deploy:
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Install Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: 18.20
-    - run: npm install
-    - run: npm install -g @vscode/vsce
-    - run: vsce publish ${{ github.ref_name }}
+      - uses: actions/checkout@v2
+      - run: npm install
+      - uses: lannonbr/vsce-action@4.0.0
+        with:
+          args: "publish -p $VSCE_TOKEN"
+        env:
+          VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
+
+# # on:
+# #   push:
+# #     # Pattern matched against refs/tags
+# #     tags:
+# #       - '*'           # Push events to every tag not containing /
+# on:
+#   push:
+#     branches:
+#       - master
+# jobs:
+#   build:
+#     runs-on: ubuntu-20.04
+#     steps:
+#     - name: Checkout
+#       uses: actions/checkout@v2
+#     - name: Install Node.js
+#       uses: actions/setup-node@v1
+#       with:
+#         node-version: 18.20
+#     - run: npm install
+#     - run: npm install -g @vscode/vsce
+#     - run: vsce publish ${{ github.ref_name }}
