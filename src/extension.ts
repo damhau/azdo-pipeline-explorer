@@ -93,7 +93,7 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
 
             return pipelines.map((pipeline: any) => {
                 return new PipelineItem(
-                    `${pipeline.definition.name}`,
+                    `${pipeline.definition.name} - ${pipeline.id}`,
                     vscode.TreeItemCollapsibleState.Collapsed,
 					"event",
                     pipeline._links.timeline.href,
@@ -208,8 +208,13 @@ async function getPipelines() {
             }
         });
 
-        const pipelines = response.data.value.slice(0, 20); // Get last 10 pipelines
 
+
+        // const result = response.data.value.sort((a: any, b: any) => {
+		// 	return new Date(a.finishTime).getTime() - new Date(b.finishTime).getTime();
+		// });
+        // const pipelines = result.slice(0, 20); // Get last 10 pipelines
+        const pipelines = response.data.value.slice(0, 20);
         return pipelines;
 	} catch (error: unknown) {  // Explicitly typing error as 'unknown'
 		console.error("Error fetching pipeline logs:", error);
@@ -309,12 +314,12 @@ export function activate(context: vscode.ExtensionContext) {
     const config = vscode.workspace.getConfiguration('azurePipelinesExplorer');
     const azureDevOpsOrgUrl = config.get<string>('azureDevOpsOrgUrl') || '';
 	const azureDevOpsProject = config.get<string>('azureDevOpsProject') || '';
-    const pat = config.get<string>('personalAccessToken') || '';
+
 
     // Example usage of URL and PAT
     console.log(`Azure DevOps URL: ${azureDevOpsOrgUrl}`);
 	console.log(`Azure DevOps Project: ${azureDevOpsProject}`);
-    console.log(`PAT: ${pat}`);
+
 
 
     // Create the TreeView for the sidebar
