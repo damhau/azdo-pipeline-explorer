@@ -7,3 +7,15 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## 0.0.1
 
 - Initial release
+
+## 0.2.0
+
+- Add icon and update readme
+
+## 0.3.0
+
+- republish on marketplace
+
+## 0.4.1
+
+- republish on marketplace
