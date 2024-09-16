@@ -20,11 +20,12 @@ This Visual Studio Code extension connects to your Azure DevOps organization and
 
 ## Usage
 
-### 1. **Configure Azure DevOps Organization URL and PAT**
+### 1. **Configure Azure DevOps Organization URL, Project and PAT**
 
 When the extension runs for the first time, it will prompt you to enter your Azure DevOps organization URL and Personal Access Token (PAT). These credentials will be securely stored for future use.
 
 - **Organization URL**: The URL of your Azure DevOps organization (e.g., `https://dev.azure.com/your-organization`).
+- **Project**: The Azure Devops project.
 - **Personal Access Token (PAT)**: The PAT required for authentication. You can create a PAT in Azure DevOps [here](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate).
 
 ### 2. **View Pipelines**
@@ -79,6 +80,7 @@ You can configure the following settings in your VS Code `settings.json`:
 
 - The extension currently retrieves only the latest 20 pipeline
 - Some error messages may not provide detailed error information.
+- The extension was only tested on Azure Devops Server (on premise)
 
 ## Contributing
 

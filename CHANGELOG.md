@@ -19,3 +19,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## 0.4.1
 
 - republish on marketplace
+
+## 0.4.3
+
+- remove unneeded dependency
