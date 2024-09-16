@@ -1,11 +1,14 @@
 name: CI
 
+# on:
+#   push:
+#     # Pattern matched against refs/tags
+#     tags:
+#       - '*'           # Push events to every tag not containing /
 on:
   push:
-    # Pattern matched against refs/tags
-    tags:        
-      - '*'           # Push events to every tag not containing /
-
+    branches:
+      - master
 jobs:
   build:
     runs-on: ubuntu-20.04
@@ -16,6 +19,6 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 18.20
-    - run: npm install 
+    - run: npm install
     - run: npm install -g @vscode/vsce
     - run: vsce publish ${{ github.ref_name }}
