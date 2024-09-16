@@ -1,6 +1,6 @@
 # Azure DevOps Pipeline Extension for VS Code
 
-This Visual Studio Code extension connects to your Azure DevOps organization and allows you to view the status of the last 10 pipelines and their logs, directly from the VS Code interface. It also provides auto-refresh functionality and pipeline log details in an output channel.
+This Visual Studio Code extension connects to your Azure DevOps organization and allows you to view the status of the last 20 pipelines and their logs, directly from the VS Code interface. It also provides auto-refresh functionality and pipeline log details in an output channel.
 
 ## Features
 
