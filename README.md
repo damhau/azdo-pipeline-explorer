@@ -16,7 +16,7 @@ This Visual Studio Code extension connects to your Azure DevOps organization and
 1. Clone or download the extension repository to your local machine.
 2. Open the folder in Visual Studio Code.
 3. Press `F5` to open a new VS Code window with the extension loaded.
-4. The extension will automatically prompt for your Azure DevOps organization URL and PAT when you run it for the first time.
+4. The extension will automatically prompt for your Azure DevOps organization URL and PAT when you run it for the first time
 
 ## Usage
 
