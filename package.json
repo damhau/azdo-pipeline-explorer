@@ -76,10 +76,10 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run compile --no-git-tag-version",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
+    "pretest": "npm run compile --no-git-tag-version && npm run lint --no-git-tag-version",
     "lint": "eslint src --ext ts",
     "test": "vscode-test"
   },
