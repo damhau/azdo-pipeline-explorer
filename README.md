@@ -13,7 +13,8 @@ This Visual Studio Code extension connects to your Azure DevOps organization and
 
 ## Installation
 
-1. click on the extension icon in VS Code and type Azure DevOps Pipeline Explorer
+1. Click on the extension icon in VS Code and type Azure DevOps Pipeline Explorer
+2. Click on install
 
 ## Usage
 
