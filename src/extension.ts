@@ -236,7 +236,7 @@ async function getPipelines() {
 async function getPipelineLogs(pipelineUrl: string) {
 
     try {
-		console.log(pipelineUrl);
+
         const response = await axios.get(pipelineUrl, {
             headers: {
 				'User-Agent': 'choco',
