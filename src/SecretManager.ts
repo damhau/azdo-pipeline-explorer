@@ -38,3 +38,5 @@ export class SecretManager {
         return `${this.keyPrefix}-${key}`;
     }
 }
+
+export default SecretManager;
