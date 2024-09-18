@@ -140,7 +140,7 @@ export class ConfigurationService {
         });
 
         if (inputPat) {
-            await this.secretManager.storeSecret('PAT', inputPat);
+            await this.secretManager!.storeSecret('PAT', inputPat);
             vscode.window.showInformationMessage('Configuration saved successfully.');
             vscode.commands.executeCommand('workbench.action.reloadWindow');
         } else {
