@@ -1,16 +1,16 @@
 import * as vscode from 'vscode';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+import { SecretManager } from './SecretManager';
 
 
 const config = vscode.workspace.getConfiguration('azurePipelinesExplorer');
+
 const azureDevOpsOrgUrl = config.get<string>('azureDevOpsOrgUrl') || '';
 const azureDevOpsProject = config.get<string>('azureDevOpsProject') || '';
-const pat = config.get<string>('personalAccessToken') || '';
-const pipelinesUrl = `${azureDevOpsOrgUrl}/${azureDevOpsProject}/_apis/build/builds?api-version=7.0&queryOrder=queueTimeDescending`;
+const userAgent = config.get<string>('userAgent') || '';
+const azureDevOpsApiVersion = config.get<string>('azureDevOpsApiVersion') || '7.0';
+
 const outputChannel = vscode.window.createOutputChannel("Azure DevOps Pipelines");
-
-
-
 
 
 class PipelineItem extends vscode.TreeItem {
@@ -64,9 +64,8 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
     private _onDidChangeTreeData: vscode.EventEmitter<PipelineItem | undefined | null | void> = new vscode.EventEmitter<PipelineItem | undefined | null | void>();
     readonly onDidChangeTreeData: vscode.Event<PipelineItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
-    constructor() {
-        this.refresh();
-    }
+    constructor(private secretManager: SecretManager, private azureDevOpsOrgUrl: string) {}
+
 	public intervalId: NodeJS.Timeout | null = null;
 
     refresh(): void {
@@ -78,9 +77,11 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
     }
 
     async getChildren(element?: PipelineItem): Promise<PipelineItem[]> {
+        const pat = await this.secretManager.getSecret('PAT');
+
         if (!element) {
             // Fetch pipelines when no parent element is provided
-            const pipelines = await getPipelines();
+            const pipelines = await getPipelines(pat!);
 
 			const anyInProgress = pipelines.some((pipeline: any) => pipeline.status === 'inProgress');
 
@@ -105,7 +106,7 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
             });
         } else if (element.pipelineUrl) {
             // Fetch logs for the selected pipeline
-            const logs = await getPipelineLogs(element.pipelineUrl);
+            const logs = await getPipelineLogs(pat!, element.pipelineUrl);
 
             return logs.map((log: any) => {
 				if (log.type === "Task"){
@@ -122,7 +123,7 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
 							{
 								command: 'azurePipelinesExplorer.showLogDetails',
 								title: 'Show Log Detail',
-								arguments: [log.log.url]
+								arguments: [pat! , log.log.url]
 							}
 						);
 
@@ -159,12 +160,15 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
 }
 
 
-async function promptForConfiguration() {
+async function promptForConfiguration(vault: SecretManager) {
+
     const config = vscode.workspace.getConfiguration('azurePipelinesExplorer');
+
 
     let url = config.get<string>('azureDevOpsOrgUrl');
 	let project = config.get<string>('azureDevOpsProject');
-    let pat = config.get<string>('personalAccessToken');
+    // let pat = config.get<string>('personalAccessToken');
+    let pat = await vault.getSecret('PAT');
 
     if (!url || !project  || !pat) {
         const inputUrl = await vscode.window.showInputBox({
@@ -187,11 +191,12 @@ async function promptForConfiguration() {
             ignoreFocusOut: true
         });
 
-        if (inputUrl && inputPat) {
+        if (inputUrl && inputProject && inputPat) {
             // Store the URL and PAT securely
             await vscode.workspace.getConfiguration('azurePipelinesExplorer').update('azureDevOpsOrgUrl', inputUrl, vscode.ConfigurationTarget.Global);
 			await vscode.workspace.getConfiguration('azurePipelinesExplorer').update('azureDevOpsProject', inputProject, vscode.ConfigurationTarget.Global);
-            await vscode.workspace.getConfiguration('azurePipelinesExplorer').update('personalAccessToken', inputPat, vscode.ConfigurationTarget.Global);
+            // await vscode.workspace.getConfiguration('azurePipelinesExplorer').update('personalAccessToken', inputPat, vscode.ConfigurationTarget.Global);
+            await vault.storeSecret('PAT', inputPat);
             vscode.window.showInformationMessage('Configuration saved successfully.');
         } else {
             vscode.window.showErrorMessage('Failed to get configuration.');
@@ -199,48 +204,113 @@ async function promptForConfiguration() {
     }
 }
 
-async function getPipelines() {
+
+async function updateConfiguration(vault: SecretManager) {
+    // const vault = PasswordVault.get();
+
+    const inputUrl = await vscode.window.showInputBox({
+        prompt: 'Enter your Azure DevOps organization URL',
+        placeHolder: 'https://dev.azure.com/your-organization',
+        ignoreFocusOut: true
+    });
+
+    const inputProject = await vscode.window.showInputBox({
+        prompt: 'Enter your Azure DevOps Project',
+        placeHolder: 'Enter Project',
+        password: false, // Hide the input
+        ignoreFocusOut: true
+    });
+
+    const inputPat = await vscode.window.showInputBox({
+        prompt: 'Enter your Azure DevOps Personal Access Token',
+        placeHolder: 'Enter PAT',
+        password: true, // Hide the input
+        ignoreFocusOut: true
+    });
+
+    if (inputUrl && inputProject && inputPat) {
+        // Store the URL and PAT securely
+        await vscode.workspace.getConfiguration('azurePipelinesExplorer').update('azureDevOpsOrgUrl', inputUrl, vscode.ConfigurationTarget.Global);
+        await vscode.workspace.getConfiguration('azurePipelinesExplorer').update('azureDevOpsProject', inputProject, vscode.ConfigurationTarget.Global);
+        // await vscode.workspace.getConfiguration('azurePipelinesExplorer').update('personalAccessToken', inputPat, vscode.ConfigurationTarget.Global);
+
+        await vault.storeSecret('PAT', inputPat);
+        vscode.window.showInformationMessage('Configuration saved successfully.');
+        vscode.commands.executeCommand('workbench.action.reloadWindow');
+    } else {
+        vscode.window.showErrorMessage('Failed to get configuration.');
+    }
+
+}
+
+
+async function updatePat(vault: SecretManager) {
+
+
+    const inputPat = await vscode.window.showInputBox({
+        prompt: 'Enter your Azure DevOps Personal Access Token',
+        placeHolder: 'Enter PAT',
+        password: true, // Hide the input
+        ignoreFocusOut: true
+    });
+
+    if (inputPat) {
+        //await context.secrets.store("azureDevOpsPAT", inputPat);
+        await vault.storeSecret('PAT', inputPat);
+        vscode.window.showInformationMessage('Configuration saved successfully.');
+        vscode.commands.executeCommand('workbench.action.reloadWindow');
+    } else {
+        vscode.window.showErrorMessage('Failed to get configuration.');
+    }
+
+}
+
+async function getPipelines(personalAccessToken: string)  {
+    const url = azureDevOpsOrgUrl + "/" + azureDevOpsProject + "/_apis/build/builds?api-version=" + azureDevOpsApiVersion + "&queryOrder=queueTimeDescending";
+
     try {
-        const response = await axios.get(pipelinesUrl, {
+        const response = await axios.get(url, {
             headers: {
-				'User-Agent': 'choco',
-                'Authorization': `Basic ${Buffer.from(':' + pat).toString('base64')}`
+				'User-Agent': userAgent,
+                'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
             }
         });
 
 
-
-        // const result = response.data.value.sort((a: any, b: any) => {
-		// 	return new Date(a.finishTime).getTime() - new Date(b.finishTime).getTime();
-		// });
-        // const pipelines = result.slice(0, 20); // Get last 10 pipelines
         const pipelines = response.data.value.slice(0, 20);
         return pipelines;
 	} catch (error: unknown) {  // Explicitly typing error as 'unknown'
-		console.error("Error fetching pipeline logs:", error);
 
-		// Check if the error is an instance of the Error class
-		if (error instanceof Error) {
-			// If it is an Error, show its message
-			vscode.window.showErrorMessage(`Error fetching pipeline logs: ${error.message}`);
-		} else if (typeof error === 'string') {
-			// If the error is a string, show it directly
-			vscode.window.showErrorMessage(`Error fetching pipeline logs: ${error}`);
-		} else {
-			// For all other types of errors
-			vscode.window.showErrorMessage('An unknown error occurred while fetching pipeline logs.');
-		}
+
+        if (axios.isAxiosError(error)) {
+            const axiosError = error as AxiosError;
+
+            // If the error has a response and the status is 401
+            if (axiosError.response && axiosError.response.status === 401) {
+                await vscode.window.showErrorMessage('Authentication failed: Invalid or expired Personal Access Token (PAT). Please update your PAT.');
+            } else {
+                // Show other errors (non-401 errors)
+                await vscode.window.showErrorMessage(`Error: ${axiosError.message}`);
+            }
+        } else {
+            // Handle other unknown errors
+            await vscode.window.showErrorMessage(`An unknown error occurred while fetching pipeline data. ${error}`);
+        }
 	}
 }
 
-async function getPipelineLogs(pipelineUrl: string) {
+
+
+
+
+async function getPipelineLogs(personalAccessToken: string, url: string) {
 
     try {
 
-        const response = await axios.get(pipelineUrl, {
+        const response = await axios.get(url, {
             headers: {
-				'User-Agent': 'choco',
-                'Authorization': `Basic ${Buffer.from(':' + pat).toString('base64')}`
+				'User-Agent': userAgent,
+                'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
             }
         });
 
@@ -250,48 +320,44 @@ async function getPipelineLogs(pipelineUrl: string) {
 
         //return response.data.records;
 	} catch (error: unknown) {  // Explicitly typing error as 'unknown'
-		console.error("Error fetching pipeline logs:", error);
-
 		// Check if the error is an instance of the Error class
 		if (error instanceof Error) {
 			// If it is an Error, show its message
-			vscode.window.showErrorMessage(`Error fetching pipeline logs: ${error.message}`);
+			await vscode.window.showErrorMessage(`Error fetching pipeline logs: ${error.message}`);
 		} else if (typeof error === 'string') {
 			// If the error is a string, show it directly
-			vscode.window.showErrorMessage(`Error fetching pipeline logs: ${error}`);
+			await vscode.window.showErrorMessage(`Error fetching pipeline logs: ${error}`);
 		} else {
 			// For all other types of errors
-			vscode.window.showErrorMessage('An unknown error occurred while fetching pipeline logs.');
+			await vscode.window.showErrorMessage('An unknown error occurred while fetching pipeline logs.');
 		}
 	}
 }
 
 
-async function getPipelineLogsDetails(pipelineUrl: string) {
+async function getPipelineLogsDetails(personalAccessToken: string, pipelineUrl: string) {
 
     try {
-		console.log(pipelineUrl);
         const response = await axios.get(pipelineUrl, {
             headers: {
-				'User-Agent': 'choco',
-                'Authorization': `Basic ${Buffer.from(':' + pat).toString('base64')}`
+				'User-Agent': userAgent,
+                'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
             }
         });
 
         return response.data;
 	} catch (error: unknown) {  // Explicitly typing error as 'unknown'
-		console.error("Error fetching pipeline logs:", error);
 
 		// Check if the error is an instance of the Error class
 		if (error instanceof Error) {
 			// If it is an Error, show its message
-			vscode.window.showErrorMessage(`Error fetching pipeline logs: ${error.message}`);
+			await vscode.window.showErrorMessage(`Error fetching pipeline logs: ${error.message}`);
 		} else if (typeof error === 'string') {
 			// If the error is a string, show it directly
-			vscode.window.showErrorMessage(`Error fetching pipeline logs: ${error}`);
+			await vscode.window.showErrorMessage(`Error fetching pipeline logs: ${error}`);
 		} else {
 			// For all other types of errors
-			vscode.window.showErrorMessage('An unknown error occurred while fetching pipeline logs.');
+			await vscode.window.showErrorMessage('An unknown error occurred while fetching pipeline logs.');
 		}
 	}
 }
@@ -301,19 +367,37 @@ async function getPipelineLogsDetails(pipelineUrl: string) {
 
 export function activate(context: vscode.ExtensionContext) {
 
+    const secretManager = new SecretManager(context);
     // Check and prompt for configuration only if not already set
-    if (!vscode.workspace.getConfiguration('azurePipelinesExplorer').get<string>('azureDevOpsOrgUrl') || !vscode.workspace.getConfiguration('azurePipelinesExplorer').get<string>('azureDevOpsProject') ||
-        !vscode.workspace.getConfiguration('azurePipelinesExplorer').get<string>('personalAccessToken')) {
+    if (!vscode.workspace.getConfiguration('azurePipelinesExplorer').get<string>('azureDevOpsOrgUrl') || !vscode.workspace.getConfiguration('azurePipelinesExplorer').get<string>('azureDevOpsProject')) {
         // Prompt for configuration only if not set
-        promptForConfiguration();
+        promptForConfiguration(secretManager);
     }
-
-
 
     // Use configuration
     const config = vscode.workspace.getConfiguration('azurePipelinesExplorer');
     const azureDevOpsOrgUrl = config.get<string>('azureDevOpsOrgUrl') || '';
 	const azureDevOpsProject = config.get<string>('azureDevOpsProject') || '';
+
+
+    // Use .then() to ensure that the secret is available before accessing it
+    let pat: string | undefined;
+    secretManager.getSecret('PAT').then((result) => {
+        pat = result;  // Assign the resolved value to the `pat` variable
+        console.log(`PAT is: ${pat}`);
+
+        // Any logic that depends on the PAT being available must go here
+        if (pat) {
+            // You can now use `pat` safely here
+            console.log('PAT is available. Proceed with API calls.');
+        } else {
+            vscode.window.showErrorMessage('PAT is missing. Please set your PAT.');
+        }
+    }).catch((error) => {
+        vscode.window.showErrorMessage(`Failed to retrieve PAT: ${error}`);
+    });
+
+
 
 
     // Example usage of URL and PAT
@@ -324,7 +408,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Create the TreeView for the sidebar
     // const pipelineProvider = new PipelineProvider();
-	const pipelineProvider = new PipelineProvider();
+	const pipelineProvider = new PipelineProvider(secretManager,azureDevOpsOrgUrl );
 	const pipelineTreeView = vscode.window.createTreeView('pipelineExplorer', {
 		treeDataProvider: pipelineProvider,
 		showCollapseAll: true, // Optional: Shows a "collapse all" button
@@ -336,9 +420,19 @@ export function activate(context: vscode.ExtensionContext) {
         pipelineProvider.startAutoRefresh();
     });
 
-	let showLogDetailsCommand = vscode.commands.registerCommand('azurePipelinesExplorer.showLogDetails', async (logURL: string) => {
+
+    let configureCommand = vscode.commands.registerCommand('azurePipelinesExplorer.configure', () => {
+        updateConfiguration(secretManager);
+    });
+
+    let updatePatCommand = vscode.commands.registerCommand('azurePipelinesExplorer.updatePat', () => {
+        updatePat(secretManager);
+    });
+
+	let showLogDetailsCommand = vscode.commands.registerCommand('azurePipelinesExplorer.showLogDetails', async (azureDevOpsPAT: string, logURL: string) => {
 		// Fetch log details
-		const logDetails = await getPipelineLogsDetails(logURL);
+
+		const logDetails = await getPipelineLogsDetails(azureDevOpsPAT, logURL);
 
 
      	// Clear the previous output
@@ -362,7 +456,7 @@ export function activate(context: vscode.ExtensionContext) {
 		outputChannel.show();
 	});
 
-    context.subscriptions.push(refreshCommand, showLogDetailsCommand);
+    context.subscriptions.push(refreshCommand, configureCommand, showLogDetailsCommand);
 
     // Start the auto-refresh when the extension is activated
     pipelineProvider.startAutoRefresh();
