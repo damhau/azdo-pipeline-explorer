@@ -27,3 +27,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## 0.7.0
 
 - Update Treeview with full pipeline structure
+
+## 0.7.3
+
+- Cleanup output of task

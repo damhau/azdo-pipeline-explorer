@@ -83,23 +83,21 @@ export class PipelineService {
 
 		// Append new log details
 		outputChannel.appendLine(`Log details for Task`);
-		outputChannel.appendLine('-----------------------------------');
-
+		outputChannel.appendLine('---------------------------------------------------------------------------');
 
 		for (var line in logDetails.value) {
+
 			var textLine = logDetails.value[line];
-			textLine = textLine.replace(/\u001b[^m]*?m/g, '');
+			textLine = textLine.replace(/\u001b[^m]*?m/g, '').slice(29);
 			outputChannel.appendLine(`${textLine}`);
 		}
 
-		outputChannel.appendLine('-----------------------------------');
+		outputChannel.appendLine('---------------------------------------------------------------------------');
 
 		// Show the output channel
 		outputChannel.show();
 
 	}
-
-
 
     private async handleError(error: unknown) {
         if (axios.isAxiosError(error)) {
