@@ -23,3 +23,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## 0.4.3
 
 - remove unneeded dependency
+
+## 0.7.0
+
+- Update Treeview with full pipeline structure
