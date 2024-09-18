@@ -85,7 +85,7 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
         else if (element.type === "pipeline") {
             const logsData = await this.pipelineService.getPipelineLogs(pat!, element.pipelineUrl!);
             const stages = logsData.records.filter((record: any) => record.type === "Stage");
-            console.log(stages);
+
             return stages.map((stage: any) => {
                 return new PipelineItem(
                     stage.id,
