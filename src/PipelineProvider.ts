@@ -4,6 +4,7 @@ import { PipelineService } from './PipelineService';
 
 class PipelineItem extends vscode.TreeItem {
     constructor(
+        public readonly element_id: string,
         public readonly label: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly type: string,
@@ -43,6 +44,8 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
 
     public intervalId: NodeJS.Timeout | null = null;
 
+    public isAutoRefreshActive: boolean = false;
+
     refresh(): void {
         this._onDidChangeTreeData.fire();
     }
@@ -53,6 +56,7 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
 
     async getChildren(element?: PipelineItem): Promise<PipelineItem[]> {
         const pat = await this.secretManager.getSecret('PAT');
+
 
         if (!element) {
             const pipelines = await this.pipelineService.getPipelines(pat!);
@@ -68,29 +72,91 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
 
             return pipelines.map((pipeline: any) => {
                 return new PipelineItem(
+                    pipeline.id,
                     `${pipeline.definition.name} - ${pipeline.id}`,
                     vscode.TreeItemCollapsibleState.Collapsed,
-                    "event",
+                    "pipeline",
                     pipeline._links.timeline.href,
                     pipeline.result,
                     pipeline.status
                 );
             });
-        } else if (element.pipelineUrl) {
-            const logs = await this.pipelineService.getPipelineLogs(pat!, element.pipelineUrl);
-            return logs.map((log: any) => {
+        }
+        else if (element.type === "pipeline") {
+            const logsData = await this.pipelineService.getPipelineLogs(pat!, element.pipelineUrl!);
+            const stages = logsData.records.filter((record: any) => record.type === "Stage");
+            console.log(stages);
+            return stages.map((stage: any) => {
                 return new PipelineItem(
-                    `${log.type}: ${log.name}`,
+                    stage.id,
+                    stage.type + ": " + stage.name,
+                    vscode.TreeItemCollapsibleState.Collapsed,
+                    "stage",
+                    element.pipelineUrl,
+                    stage.result,
+                    stage.state
+                );
+            });
+        }
+        else if (element.type === "stage") {
+            const logsData = await this.pipelineService.getPipelineLogs(pat!, element.pipelineUrl!);
+            const phases = logsData.records.filter((record: any) =>
+                 record.type === "Phase" && record.parentId === element.element_id
+            );
+            return phases.map((phase: any) => {
+                return new PipelineItem(
+                    phase.id,
+                    phase.type + ": " + phase.name ,
+                    vscode.TreeItemCollapsibleState.Collapsed,
+                    "phase",
+                    element.pipelineUrl,
+                    phase.result,
+                    phase.state
+                );
+            });
+        }
+        else if (element.type === "phase") {
+            const logsData = await this.pipelineService.getPipelineLogs(pat!, element.pipelineUrl!);
+            const jobs = logsData.records.filter((record: any) =>
+                 record.type === "Job" && record.parentId === element.element_id
+            );
+            return jobs.map((job: any) => {
+                return new PipelineItem(
+                    job.id,
+                    job.type + ": " + job.name ,
+                    vscode.TreeItemCollapsibleState.Collapsed,
+                    "job",
+                    element.pipelineUrl,
+                    job.result,
+                    job.state
+                );
+            });
+        }
+        else if (element.type === "job") {
+            const logsData = await this.pipelineService.getPipelineLogs(pat!, element.pipelineUrl!);
+
+            const tasks = logsData.records.filter((record: any) =>
+                 record.type === "Task" && record.parentId === element.element_id
+            );
+
+            const orderedTasks = tasks.sort((a: any, b: any) => {
+                return new Date(a.finishTime).getTime() - new Date(b.finishTime).getTime();
+            });
+
+            return orderedTasks.map((task: any) => {
+                return new PipelineItem(
+                    task.id,
+                    task.type + ": " + task.name ,
                     vscode.TreeItemCollapsibleState.None,
-                    "log",
-                    undefined,
-                    log.result,
-                    undefined,
-                    log.log?.url,
-                    log.log ? {
+                    "task",
+                    element.pipelineUrl,
+                    task.result,
+                    task.state,
+                    task.log?.url,
+                    task.log ? {
                         command: 'azurePipelinesExplorer.showLogDetails',
                         title: 'Show Log Detail',
-                        arguments: [pat!, log.log.url]
+                        arguments: [pat!, task.log.url]
                     } : undefined
                 );
             });
@@ -100,13 +166,20 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
 
 
 
-
-
     startAutoRefresh() {
         if (this.intervalId) {
             clearInterval(this.intervalId);
         }
+        this.isAutoRefreshActive = true;
         this.intervalId = setInterval(() => this.refresh(), 10000);
+    }
+
+    stopAutoRefresh() {
+        if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+        }
+        this.isAutoRefreshActive = false; // Reset flag when refresh stops
     }
 }
 

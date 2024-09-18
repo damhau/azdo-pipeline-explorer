@@ -29,7 +29,7 @@
     "commands": [
       {
         "command": "azurePipelinesExplorer.refreshPipeline",
-        "title": "Refresh Pipelines",
+        "title": "Pipeline Explorer: Refresh Pipelines",
 				"icon": {
 					"light": "images/light/refresh.svg",
 					"dark": "images/dark/refresh.svg"
@@ -46,7 +46,15 @@
       ,
       {
         "command": "azurePipelinesExplorer.updatePat",
-        "title": "Pipeline Explorer Update PAT"
+        "title": "Pipeline Explorer: Update PAT"
+      },
+      {
+        "command": "azurePipelinesExplorer.startAutoRefresh",
+        "title": "Pipeline Explorer: Start Auto Refresh"
+      },
+      {
+        "command": "azurePipelinesExplorer.stopAutoRefresh",
+        "title": "Pipeline Explorer: Stop Auto Refresh"
       }
     ],
     "views": {
@@ -114,6 +122,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "axios": "^1.7.7"
+    "axios": "^1.7.7",
+    "axios-retry": "^4.5.0"
   }
 }

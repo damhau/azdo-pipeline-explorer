@@ -1,6 +1,11 @@
 // src/PipelineService.ts
 import axios, { AxiosError } from 'axios';
+import axiosRetry from 'axios-retry';
 import * as vscode from 'vscode';
+
+axiosRetry(axios, {
+    retries: 3, // Number of retries (Defaults to 3)
+ });
 
 export class PipelineService {
     private azureDevOpsOrgUrl: string;
@@ -47,9 +52,10 @@ export class PipelineService {
                     'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
                 }
             });
-            return response.data.records.sort((a: any, b: any) => {
-                return new Date(a.finishTime).getTime() - new Date(b.finishTime).getTime();
-            });
+            // return response.data.records.sort((a: any, b: any) => {
+            //     return new Date(a.finishTime).getTime() - new Date(b.finishTime).getTime();
+            // });
+            return response.data;
         } catch (error: unknown) {
             return this.handleError(error);
         }

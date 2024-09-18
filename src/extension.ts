@@ -35,28 +35,22 @@ export async function activate(context: vscode.ExtensionContext) {
     });
     vscode.window.registerTreeDataProvider('pipelineExplorer', pipelineProvider);
 
-    // Command to refresh the pipeline TreeView
-    let refreshCommand = vscode.commands.registerCommand('azurePipelinesExplorer.refreshPipeline', () => {
-        pipelineProvider.startAutoRefresh();
-    });
-
-    // Command to refresh update the extension configuration and save it in the user settings
-    let configureCommand = vscode.commands.registerCommand('azurePipelinesExplorer.configure', () => {
-        configurationService.updateConfiguration();
-    });
-
-    // Command to refresh update only the pat in the extension configuration and save it in the user settings
-    let updatePatCommand = vscode.commands.registerCommand('azurePipelinesExplorer.updatePat', () => {
-        configurationService.updatePat();
-    });
-
-    // Command to get the pipeline task detail and show it in the vs code output windows
-    let showLogDetailsCommand = vscode.commands.registerCommand('azurePipelinesExplorer.showLogDetails', async (azureDevOpsPAT: string, logURL: string) => {
-        pipelineService.showLogDetails(azureDevOpsPAT, logURL);
-
-    });
-
-    context.subscriptions.push(refreshCommand, configureCommand, updatePatCommand, showLogDetailsCommand);
+    context.subscriptions.push(
+        vscode.commands.registerCommand('azurePipelinesExplorer.refreshPipeline', () => pipelineProvider.startAutoRefresh()),
+        vscode.commands.registerCommand('azurePipelinesExplorer.configure', () => configurationService.updateConfiguration()),
+        vscode.commands.registerCommand('azurePipelinesExplorer.updatePat', () => configurationService.updatePat()),
+        vscode.commands.registerCommand('azurePipelinesExplorer.showLogDetails', async (azureDevOpsPAT: string, logURL: string) => {
+            await pipelineService.showLogDetails(azureDevOpsPAT, logURL);
+        }),
+        vscode.commands.registerCommand('azurePipelinesExplorer.startAutoRefresh', () => {
+            vscode.window.showInformationMessage('Auto refresh started');
+            pipelineProvider.startAutoRefresh();
+        }),
+        vscode.commands.registerCommand('azurePipelinesExplorer.stopAutoRefresh', () => {
+            vscode.window.showInformationMessage('Auto refresh stopped');
+            pipelineProvider.stopAutoRefresh();
+        })
+    );
 
     // Start the auto-refresh when the extension is activated
     pipelineProvider.startAutoRefresh();
