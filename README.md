@@ -9,7 +9,8 @@ This Visual Studio Code extension connects to Azure DevOps and allows you to vie
 - Auto-refresh functionality (configurable interval) for keeping the pipeline view updated.
 - Refresh manually using the tree view title button.
 - Stop refreshing automatically when no pipelines are in progress.
-- Securely store Azure DevOps organization URL and Personal Access Token (PAT) on first use.
+- Securely store Personal Access Token (PAT) on first use.
+- Support Azure Devops Service (Saas) and Azure Devops Server (Onpremise)
 
 ## Installation
 
@@ -68,14 +69,12 @@ You can configure the following settings in your VS Code `settings.json`:
 
 1. Go to your Azure DevOps organization.
 2. Click on your profile icon in the top-right corner and select **Personal Access Tokens**.
-3. Click **New Token** and configure the token to have **Read & Execute** permissions for pipelines.
+3. Click **New Token** and configure the token to have **Read** permissions for pipelines.
 4. Copy the PAT and enter it in the extension when prompted.
 
 ## Known Issues
 
-- The extension currently retrieves only the latest 20 pipeline
-- Some error messages may not provide detailed error information.
-- The extension was only tested on Azure Devops Server (on premise)
+- The extension currently supports a single Azure DevOps organization and project. Please create an issue on GitHub if you're interested in multi-organization or multi-project support.
 
 ## Contributing
 
