@@ -26,7 +26,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // Instanciate class of pipeline service (for api call) and pipelineProvider for vs code treeview
     const pipelineService = new PipelineService(azureDevOpsOrgUrl, azureDevOpsProject, userAgent, azureDevOpsApiVersion);
-    const pipelineProvider = new PipelineProvider(secretManager, pipelineService);
+    const pipelineProvider = new PipelineProvider(secretManager, pipelineService, configurationService);
 
     // Create the TreeView for the sidebar
     vscode.window.createTreeView('pipelineExplorer', {
@@ -36,7 +36,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.registerTreeDataProvider('pipelineExplorer', pipelineProvider);
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('azurePipelinesExplorer.refreshPipeline', () => pipelineProvider.startAutoRefresh()),
+        vscode.commands.registerCommand('azurePipelinesExplorer.refreshPipeline', () => pipelineProvider.refresh()),
         vscode.commands.registerCommand('azurePipelinesExplorer.configure', () => configurationService.updateConfiguration()),
         vscode.commands.registerCommand('azurePipelinesExplorer.updatePat', () => configurationService.updatePat()),
         vscode.commands.registerCommand('azurePipelinesExplorer.showLogDetails', async (azureDevOpsPAT: string, logURL: string) => {

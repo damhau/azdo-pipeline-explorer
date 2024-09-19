@@ -20,7 +20,7 @@ export class PipelineService {
         this.azureDevOpsApiVersion = apiVersion;
     }
 
-    async getPipelines(personalAccessToken: string) {
+    async getPipelines(personalAccessToken: string, maxItems: number) {
         const url = `${this.azureDevOpsOrgUrl}/${this.azureDevOpsProject}/_apis/build/builds?api-version=${this.azureDevOpsApiVersion}&queryOrder=queueTimeDescending`;
 
         try {
@@ -34,7 +34,7 @@ export class PipelineService {
 			if (response.request._redirectable._redirectCount > 0){
 				await vscode.window.showErrorMessage(`An error occurred while fetching pipeline data. There is a redirect in the response, probably a SAML or Openid authentication is configured on the Azure Devops API`);
 			}else{
-				const pipelines = response.data.value.slice(0, 20);
+				const pipelines = response.data.value.slice(0, maxItems);
 				return pipelines;
 
 			}
@@ -85,13 +85,22 @@ export class PipelineService {
 		outputChannel.appendLine(`Log details for Task`);
 		outputChannel.appendLine('---------------------------------------------------------------------------');
 
-		for (var line in logDetails.value) {
 
-			var textLine = logDetails.value[line];
-			textLine = textLine.replace(/\u001b[^m]*?m/g, '').slice(29);
-			outputChannel.appendLine(`${textLine}`);
-		}
+        for (let line of logDetails.value) {
+            let textLine = line.replace(/\u001b[^m]*?m/g, '').slice(29);
+            // Check if the start of a new block matches the timestamp pattern
+            const timestampPattern = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z \[\w+\].*/;
+            const problemsPattern = /The following problems may be the cause of any confusing errors from downstream operations/;
+            const dashPattern = /^\s+-\s.*/;
 
+            if (!timestampPattern.test(textLine)) {
+                if (!problemsPattern.test(textLine)) {
+                    if (!dashPattern.test(textLine)) {
+                        outputChannel.appendLine(`${textLine}`);
+                    }
+                }
+            }
+        }
 		outputChannel.appendLine('---------------------------------------------------------------------------');
 
 		// Show the output channel

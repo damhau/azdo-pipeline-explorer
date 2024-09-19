@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { SecretManager } from './SecretManager';
 import { PipelineService } from './PipelineService';
+import { ConfigurationService } from './ConfigurationService';
 
 class PipelineItem extends vscode.TreeItem {
     constructor(
@@ -40,7 +41,7 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
     private _onDidChangeTreeData: vscode.EventEmitter<PipelineItem | undefined | null | void> = new vscode.EventEmitter<PipelineItem | undefined | null | void>();
     readonly onDidChangeTreeData: vscode.Event<PipelineItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
-    constructor(private secretManager: SecretManager, private pipelineService: PipelineService) { }
+    constructor(private secretManager: SecretManager, private pipelineService: PipelineService , private configurationService: ConfigurationService) { }
 
     public intervalId: NodeJS.Timeout | null = null;
 
@@ -55,11 +56,12 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
     }
 
     async getChildren(element?: PipelineItem): Promise<PipelineItem[]> {
+        const { azureDevOpsPipelineMaxItems } = this.configurationService.getConfiguration();
         const pat = await this.secretManager.getSecret('PAT');
 
 
         if (!element) {
-            const pipelines = await this.pipelineService.getPipelines(pat!);
+            const pipelines = await this.pipelineService.getPipelines(pat!, azureDevOpsPipelineMaxItems);
 
 			const anyInProgress = pipelines.some((pipeline: any) => pipeline.status === 'inProgress');
 

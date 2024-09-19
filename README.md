@@ -1,16 +1,49 @@
 # Azure DevOps Pipeline Explorer
 
-This Visual Studio Code extension connects to Azure DevOps and allows you to view the status of the last 20 pipelines and their logs, directly from the VS Code interface. It also provides auto-refresh functionality and pipeline log details in an output channel.
+- [Azure DevOps Pipeline Explorer](#azure-devops-pipeline-explorer)
+  - [Introduction](#introduction)
+  - [Features](#features)
+  - [Screenshot](#screenshot)
+  - [Azure Devops API Usage](#azure-devops-api-usage)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Configure Azure DevOps Organization URL, Project and PAT](#configure-azure-devops-organization-url-project-and-pat)
+    - [View Pipelines](#view-pipelines)
+    - [View Logs](#view-logs)
+  - [Settings](#settings)
+  - [Requirements](#requirements)
+  - [How to Create a PAT in Azure DevOps](#how-to-create-a-pat-in-azure-devops)
+  - [Known Issues](#known-issues)
+  - [Contributing](#contributing)
+  - [Author](#author)
+
+
+## Introduction
+
+This Visual Studio Code extension connects to Azure DevOps and allows you to view the status of the last pipelines and their logs, directly from the VS Code interface. It also provides auto-refresh functionality and pipeline log details in an output channel.
 
 ## Features
 
-- View the latest 20 pipeline statuses in Azure DevOps.
+- View the last 20 build pipelines in Azure DevOps 20 is the default settings but it is customizable.
+- Display each pipeline stage as a hierarchy in a Vs Code treeview.
 - Display detailed pipeline logs by clicking on pipeline items.
 - Auto-refresh functionality (configurable interval) for keeping the pipeline view updated.
 - Refresh manually using the tree view title button.
 - Stop refreshing automatically when no pipelines are in progress.
 - Securely store Personal Access Token (PAT) on first use.
-- Support Azure Devops Service (Saas) and Azure Devops Server (Onpremise)
+- Support Azure Devops Service (Saas) and Azure Devops Server
+
+## Screenshot
+
+![alt text](images/image.png)
+
+## Azure Devops API Usage
+
+The extension use the following Azure Devops apis:
+
+- [/\_apis/build/builds](https://learn.microsoft.com/en-us/rest/api/azure/devops/build/builds/list?view=azure-devops-rest-7.0): to retrieve the last n pipeline execution and list them in the treeview
+- [/\_apis/build/builds/<build_id>/Timeline](https://learn.microsoft.com/en-us/rest/api/azure/devops/build/timeline/get?view=azure-devops-rest-7.0): to retrieve the details of each pipeline execution (Stage, Task, job) and display them as a hierarchy in the treeview
+- [/\_apis/build/builds/<build_id>/logs/<log_id>](https://learn.microsoft.com/en-us/rest/api/azure/devops/build/builds/get-build-log?view=azure-devops-rest-7.0): to show the detail of a pipeline task in the Output tab
 
 ## Installation
 
@@ -19,34 +52,26 @@ This Visual Studio Code extension connects to Azure DevOps and allows you to vie
 
 ## Usage
 
-### 1. **Configure Azure DevOps Organization URL, Project and PAT**
+### Configure Azure DevOps Organization URL, Project and PAT
 
-When the extension runs for the first time, it will prompt you to enter your Azure DevOps organization URL and Personal Access Token (PAT). These credentials will be securely stored for future use.
+When the extension runs for the first time, it will prompt you to enter your Azure DevOps organization URL, Project and Personal Access Token (PAT). The PAT is securely stored for future use and the other parameters are saved in your in your VS Code `settings.json`
 
 - **Organization URL**: The URL of your Azure DevOps organization (e.g., `https://dev.azure.com/your-organization`).
 - **Project**: The Azure Devops project.
 - **Personal Access Token (PAT)**: The PAT required for authentication. You can create a PAT in Azure DevOps [here](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate).
 
-### 2. **View Pipelines**
+### View Pipelines
 
 - After the initial setup, the extension will display the last 20 pipelines of your Azure DevOps organization in a tree view on the Activity Bar (`Azure Pipelines` view).
 
-### 3. **View Logs**
+### View Logs
 
 - Click on a task from a pipeline to display the logs in the output channel. Each log entry provides detailed information about the pipeline run.
 
-### 4. **Auto-refresh**
-
-- The pipeline list will refresh every 5 seconds by default.
-- If the latest pipeline is not "In Progress", the auto-refresh will stop to save resources.
-
-### 5. **Manual Refresh**
-
-- Click the refresh button in the tree view title to manually refresh the pipeline list at any time.
 
 ## Settings
 
-You can configure the following settings in your VS Code `settings.json`:
+The extension will configure the following settings automatically in your VS Code `settings.json` during first start:
 
 ```json
 {
@@ -57,6 +82,18 @@ You can configure the following settings in your VS Code `settings.json`:
 
 - `pipelineExtension.azureDevOpsOrgUrl`: The URL of your Azure DevOps organization.
 - `pipelineExtension.azureDevOpsProject`: The name of the Azure Devops project.
+
+There are optional settings that can be added in your VS Code `settings.json`:
+
+```json
+{
+  "azurePipelinesExplorer.userAgent": "My user agent",
+  "azurePipelinesExplorer.azureDevOpsPipelineMaxItems": 20
+}
+```
+
+- `pipelineExtension.userAgent`: A custom http user agent header.
+- `pipelineExtension.azureDevOpsPipelineMaxItems`: The number of pipeline to get from the Azure Devops api /\_apis/build/builds
 
 ## Requirements
 
@@ -79,3 +116,9 @@ You can configure the following settings in your VS Code `settings.json`:
 ## Contributing
 
 Contributions are welcome! Feel free to open issues and submit pull requests.
+
+## Author
+
+Damien Hauser
+
+https://github.com/damhau/azdo-pipeline-explorer
