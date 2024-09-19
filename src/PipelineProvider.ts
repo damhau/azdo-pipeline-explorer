@@ -20,8 +20,12 @@ class PipelineItem extends vscode.TreeItem {
     }
 
     private getIconForResult(result?: string, status?: string, type?: string): vscode.ThemeIcon {
-        if (status === "inProgress" && type === "event") {
+        if (status === "inProgress" ) {
             return new vscode.ThemeIcon('sync');
+        }
+
+        if (status === "pending") {
+            return new vscode.ThemeIcon('debug-pause');
         }
 
         switch (result) {
@@ -74,13 +78,13 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
 
             return pipelines.map((pipeline: any) => {
                 return new PipelineItem(
-                    pipeline.id,
-                    `${pipeline.definition.name} - ${pipeline.id}`,
+                    pipeline.id, // element_id
+                    `${pipeline.definition.name} - ${pipeline.id}`, // label
                     vscode.TreeItemCollapsibleState.Collapsed,
-                    "pipeline",
-                    pipeline._links.timeline.href,
-                    pipeline.result,
-                    pipeline.status
+                    "pipeline", // type
+                    pipeline._links.timeline.href, // url
+                    pipeline.result, // result
+                    pipeline.status // status
                 );
             });
         }

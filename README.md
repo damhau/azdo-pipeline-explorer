@@ -10,6 +10,7 @@
     - [Configure Azure DevOps Organization URL, Project and PAT](#configure-azure-devops-organization-url-project-and-pat)
     - [View Pipelines](#view-pipelines)
     - [View Logs](#view-logs)
+    - [Auto refresh](#auto-refresh)
   - [Settings](#settings)
   - [Requirements](#requirements)
   - [How to Create a PAT in Azure DevOps](#how-to-create-a-pat-in-azure-devops)
@@ -24,7 +25,7 @@ This Visual Studio Code extension connects to Azure DevOps and allows you to vie
 
 ## Features
 
-- View the last 20 build pipelines in Azure DevOps 20 is the default settings but it is customizable.
+- View the last 20 build pipelines in Azure DevOps. 20 is the default settings but it is customizable.
 - Display each pipeline stage as a hierarchy in a Vs Code treeview.
 - Display detailed pipeline logs by clicking on pipeline items.
 - Auto-refresh functionality (configurable interval) for keeping the pipeline view updated.
@@ -47,14 +48,14 @@ The extension use the following Azure Devops apis:
 
 ## Installation
 
-1. Click on the extension icon in VS Code and type Azure DevOps Pipeline Explorer
-2. Click on install
+1. Click on the extension icon in VS Code and type Azure DevOps Pipeline Explorer.
+2. Click on install.
 
 ## Usage
 
 ### Configure Azure DevOps Organization URL, Project and PAT
 
-When the extension runs for the first time, it will prompt you to enter your Azure DevOps organization URL, Project and Personal Access Token (PAT). The PAT is securely stored for future use and the other parameters are saved in your in your VS Code `settings.json`
+When the extension runs for the first time, it will prompt you to enter your Azure DevOps organization URL, Project and Personal Access Token (PAT). The PAT is securely stored for future use and the other parameters are saved in your in your VS Code `settings.json`.
 
 - **Organization URL**: The URL of your Azure DevOps organization (e.g., `https://dev.azure.com/your-organization`).
 - **Project**: The Azure Devops project.
@@ -62,11 +63,19 @@ When the extension runs for the first time, it will prompt you to enter your Azu
 
 ### View Pipelines
 
-- After the initial setup, the extension will display the last 20 pipelines of your Azure DevOps organization in a tree view on the Activity Bar (`Azure Pipelines` view).
+- After the initial setup, the extension will display the last 20 pipelines of your Azure DevOps organization in a tree view on the Activity Bar (`Azure Devops Pipelines` view).
+- If there is a pipeline in progress the treeview will auto refresh. You can stop the auto refresh with the command "Pipeline Explorer: Stop Auto Refresh".
+- The icon of the pipeline item show that state of each stage/task.
 
 ### View Logs
 
 - Click on a task from a pipeline to display the logs in the output channel. Each log entry provides detailed information about the pipeline run.
+
+
+### Auto refresh
+
+- You can start auto refresh of the pipeline list in the treeview with the command "Pipeline Explorer: Start Auto Refresh"
+- You can stop auto refresh of the pipeline list in the treeview with the command "Pipeline Explorer: Stop Auto Refresh"
 
 
 ## Settings
