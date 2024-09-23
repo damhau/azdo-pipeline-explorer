@@ -95,19 +95,6 @@ export class ConfigurationService {
             ignoreFocusOut: true
         });
 
-        const configureUserAgentEnabled = await vscode.window.showQuickPick(['Yes', 'No'], {
-            placeHolder: 'Do you want to configure a custom Http user-agent header?'
-        });
-
-        if (configureUserAgentEnabled === "Yes") {
-            const inputUserAgent = await vscode.window.showInputBox({
-                prompt: 'Enter the custom Http user-agent header',
-                placeHolder: 'Chrome/42.0.2311.135',
-                password: false,
-                ignoreFocusOut: true
-            });
-            await vscode.workspace.getConfiguration('azurePipelinesExplorer').update('userAgent', inputUserAgent, vscode.ConfigurationTarget.Global);
-        }
 
         if (inputUrl && inputProject && inputPat) {
             await vscode.workspace.getConfiguration('azurePipelinesExplorer').update('azureDevOpsOrgUrl', inputUrl, vscode.ConfigurationTarget.Global);
