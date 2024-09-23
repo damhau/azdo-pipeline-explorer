@@ -2,7 +2,7 @@
   "name": "azdo-pipeline-explorer",
   "displayName": "Azure Devops Pipeline Explorer",
   "description": "This Visual Studio Code extension connects to your Azure DevOps organization and allows you to view the status of the last pipelines and their logs, directly from the VS Code interface.",
-  "version": "0.7.6",
+  "version": "0.7.8",
   "icon": "images/azdopipeline.png",
   "repository": {
     "url": "https://github.com/damhau/azdo-pipeline-explorer"
@@ -30,10 +30,10 @@
       {
         "command": "azurePipelinesExplorer.refreshPipeline",
         "title": "Pipeline Explorer: Refresh Pipelines",
-				"icon": {
-					"light": "images/light/refresh.svg",
-					"dark": "images/dark/refresh.svg"
-				}
+        "icon": {
+          "light": "images/light/refresh.svg",
+          "dark": "images/dark/refresh.svg"
+        }
       },
       {
         "command": "azurePipelinesExplorer.showLogDetails",
@@ -42,8 +42,7 @@
       {
         "command": "azurePipelinesExplorer.configure",
         "title": "Pipeline Explorer: Configure"
-      }
-      ,
+      },
       {
         "command": "azurePipelinesExplorer.updatePat",
         "title": "Pipeline Explorer: Update PAT"

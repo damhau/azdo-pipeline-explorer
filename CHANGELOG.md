@@ -31,3 +31,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## 0.7.3
 
 - Cleanup output of task
+
+## 0.7.7
+
+- update user agent default settings
+
+
+## 0.7.8
+
+- remove custom user agent during setup

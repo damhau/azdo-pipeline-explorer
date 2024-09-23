@@ -20,7 +20,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // Load configuration
     const { azureDevOpsOrgUrl, azureDevOpsProject, azureDevOpsApiVersion, userAgent } = configurationService.getConfiguration();
 
-    console.debug(`Azure Devops Pipeline Explorer Started 2`);
+    console.debug(`Azure Devops Pipeline Explorer Started`);
     console.debug(`Azure DevOps URL: ${azureDevOpsOrgUrl}`);
     console.debug(`Azure DevOps Project: ${azureDevOpsProject}`);
 

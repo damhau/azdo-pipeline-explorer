@@ -17,8 +17,8 @@ export class ConfigurationService {
             azureDevOpsOrgUrl: config.get<string>('azureDevOpsOrgUrl') || '',
             azureDevOpsProject: config.get<string>('azureDevOpsProject') || '',
             azureDevOpsApiVersion: config.get<string>('azureDevOpsApiVersion') || '7.0',
-            userAgent: config.get<string>('userAgent') || `Azure DevOps Explorer Extension/1.0 (${os.platform()}; ${os.release()})`,
-            azureDevOpsPipelineMaxItems : config.get<number>('azureDevOpsPipelineMaxItems') || 20
+            userAgent: config.get<string>('userAgent') || `azure-devops-pipeline-explorer-extension/1.0 (${os.platform()}; ${os.release()})`,
+            azureDevOpsPipelineMaxItems: config.get<number>('azureDevOpsPipelineMaxItems') || 20
         };
     }
 
@@ -51,19 +51,7 @@ export class ConfigurationService {
             });
 
 
-			const configureUserAgentEnabled = await vscode.window.showQuickPick(['Yes', 'No'], {
-				placeHolder: 'Do you want to configure a custom Http user-agent header?'
-			});
 
-			if (configureUserAgentEnabled === "Yes") {
-				const inputUserAgent = await vscode.window.showInputBox({
-					prompt: 'Enter the custom Http user-agent header',
-					placeHolder: 'Chrome/42.0.2311.135',
-					password: false,
-					ignoreFocusOut: true
-				});
-				await vscode.workspace.getConfiguration('azurePipelinesExplorer').update('userAgent', inputUserAgent, vscode.ConfigurationTarget.Global);
-			}
 
             if (inputUrl && inputProject && inputPat) {
                 await vscode.workspace.getConfiguration('azurePipelinesExplorer').update('azureDevOpsOrgUrl', inputUrl, vscode.ConfigurationTarget.Global);
