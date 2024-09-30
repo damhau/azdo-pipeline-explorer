@@ -5,12 +5,13 @@ import { PipelineService } from './PipelineService';
 import { ConfigurationService } from './ConfigurationService';
 import { PipelineProvider } from './PipelineProvider';
 import { ProjectProvider } from './ProjectProvider';
+import { debug } from 'console';
 
 export async function activate(context: vscode.ExtensionContext) {
 
     const secretManager = new SecretManager(context);
 
-    const configurationService = new ConfigurationService(secretManager);
+    const configurationService = new ConfigurationService(secretManager, context);
 
     // Check and prompt for configuration only if not already set
     if (!vscode.workspace.getConfiguration('azurePipelinesExplorer').get<string>('azureDevOpsOrgUrl') || !vscode.workspace.getConfiguration('azurePipelinesExplorer').get<string>('azureDevOpsProject')) {
@@ -37,11 +38,11 @@ export async function activate(context: vscode.ExtensionContext) {
     });
     vscode.window.registerTreeDataProvider('pipelineExplorer', pipelineProvider);
 
-    const projectTreeView = vscode.window.createTreeView('projectExplorer', {
+    vscode.window.createTreeView('projectExplorer', {
         treeDataProvider: projectProvider,
         showCollapseAll: true
     });
-
+    await projectProvider.refresh();
     context.subscriptions.push(
         vscode.commands.registerCommand('azurePipelinesExplorer.refreshPipeline', () => pipelineProvider.refresh()),
         vscode.commands.registerCommand('azurePipelinesExplorer.configure', () => configurationService.updateConfiguration()),
@@ -56,6 +57,12 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('azurePipelinesExplorer.stopAutoRefresh', () => {
             vscode.window.showInformationMessage('Auto refresh stopped');
             pipelineProvider.stopAutoRefresh();
+        }),
+        vscode.commands.registerCommand('azurePipelinesExplorer.selectProject', async (projectId: string) => {
+            // Update the selected project in the configuration
+            await configurationService.updateSelectedProjectInGlobalState(projectId);
+            // Refresh the pipeline explorer to show pipelines for the new project
+            pipelineProvider.refresh();
         })
     );
 

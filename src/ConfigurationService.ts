@@ -6,9 +6,11 @@ import { SecretManager } from './SecretManager';
 
 export class ConfigurationService {
     private secretManager?: SecretManager;
+    private context?: vscode.ExtensionContext;
 
-    constructor(secretManager?: SecretManager) {
+    constructor(secretManager?: SecretManager, context?: vscode.ExtensionContext) {
         this.secretManager = secretManager;
+        this.context = context;
     }
 
     getConfiguration() {
@@ -18,6 +20,7 @@ export class ConfigurationService {
             azureDevOpsProject: config.get<string>('azureDevOpsProject') || '',
             azureDevOpsApiVersion: config.get<string>('azureDevOpsApiVersion') || '7.0',
             userAgent: config.get<string>('userAgent') || `azure-devops-pipeline-explorer-extension/1.0 (${os.platform()}; ${os.release()})`,
+            azureSelectedDevOpsProject: config.get<string>('userAgent') || '',
             azureDevOpsPipelineMaxItems: config.get<number>('azureDevOpsPipelineMaxItems') || 20
         };
     }
@@ -123,4 +126,14 @@ export class ConfigurationService {
             vscode.window.showErrorMessage('Failed to get configuration.');
         }
     }
+    // Store the selected project in globalState
+    async updateSelectedProjectInGlobalState(projectId: string) {
+        await this.context?.globalState.update('azureDevOpsSelectedProject', projectId);
+    }
+
+    getSelectedProjectFromGlobalState(): string | undefined {
+        const selectedProject = this.context?.globalState.get<string>('azureDevOpsSelectedProject');
+        return selectedProject;
+    }
+
 }

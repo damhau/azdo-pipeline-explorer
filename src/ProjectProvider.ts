@@ -5,7 +5,6 @@ import { ConfigurationService } from './ConfigurationService';
 import axios, { AxiosError } from 'axios';
 import axiosRetry from 'axios-retry';
 
-console.debug("ProjectProvider");
 
 class ProjectItem extends vscode.TreeItem {
 	constructor(
@@ -19,12 +18,19 @@ class ProjectItem extends vscode.TreeItem {
 }
 
 export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
+
 	private _onDidChangeTreeData: vscode.EventEmitter<ProjectItem | undefined | null | void> = new vscode.EventEmitter<ProjectItem | undefined | null | void>();
 	readonly onDidChangeTreeData: vscode.Event<ProjectItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
 	constructor(private secretManager: SecretManager, private configurationService: ConfigurationService) { }
 
 	private projects: ProjectItem[] = [];
+	private allowedProjectIds: string[] = ['51e05c39-809d-4918-b65e-ef4f3217307c', '0075e175-4cd3-4c67-97f2-996008caa278', '63bc76d1-79ae-4565-9435-3559616b821d']; //
+
+
+
+
+
 
 	async refresh(): Promise<void> {
 
@@ -39,14 +45,19 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
 						'Authorization': `Basic ${Buffer.from(':' + pat).toString('base64')}`
 					}
 				});
-				console.debug(response);
-				this.projects = response.data.value.map((project: any) => new ProjectItem(project.name, project.id, vscode.TreeItemCollapsibleState.None, {
+
+
+                const filteredProjects = response.data.value.filter((project: any) =>
+                    this.allowedProjectIds.includes(project.id)
+                );
+
+				this.projects = filteredProjects.map((project: any) => new ProjectItem(project.name, project.id, vscode.TreeItemCollapsibleState.None, {
 					command: 'azurePipelinesExplorer.selectProject',
 					title: 'Select Project',
 					arguments: [project.id]
 				}));
 			} catch (error) {
-				console.debug(error);
+
 				vscode.window.showErrorMessage('Failed to load projects');
 			}
 		}
@@ -62,3 +73,4 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
 		return this.projects;
 	}
 }
+

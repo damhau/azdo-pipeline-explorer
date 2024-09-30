@@ -20,8 +20,11 @@ export class PipelineService {
         this.azureDevOpsApiVersion = apiVersion;
     }
 
-    async getPipelines(personalAccessToken: string, maxItems: number) {
-        const url = `${this.azureDevOpsOrgUrl}/${this.azureDevOpsProject}/_apis/build/builds?api-version=${this.azureDevOpsApiVersion}&queryOrder=queueTimeDescending`;
+    async getPipelines(personalAccessToken: string, maxItems: number, azureSelectedDevOpsProject: string) {
+        const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/build/builds?api-version=${this.azureDevOpsApiVersion}&queryOrder=queueTimeDescending`;
+
+
+
 
         try {
             const response = await axios.get(url, {

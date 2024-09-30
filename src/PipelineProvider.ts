@@ -49,6 +49,9 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
 
     constructor(private secretManager: SecretManager, private pipelineService: PipelineService, private configurationService: ConfigurationService) { }
 
+
+
+
     public intervalId: NodeJS.Timeout | null = null;
 
     public isAutoRefreshActive: boolean = false;
@@ -62,12 +65,16 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
     }
 
     async getChildren(element?: PipelineItem): Promise<PipelineItem[]> {
-        const { azureDevOpsPipelineMaxItems } = this.configurationService.getConfiguration();
+
+        const { azureDevOpsPipelineMaxItems} = this.configurationService.getConfiguration();
         const pat = await this.secretManager.getSecret('PAT');
 
 
+        const azureDevOpsSelectedProject = this.configurationService.getSelectedProjectFromGlobalState();
+
+
         if (!element) {
-            const pipelines = await this.pipelineService.getPipelines(pat!, azureDevOpsPipelineMaxItems);
+            const pipelines = await this.pipelineService.getPipelines(pat!, azureDevOpsPipelineMaxItems, azureDevOpsSelectedProject!);
 
             const anyInProgress = pipelines.some((pipeline: any) => pipeline.status === 'inProgress');
 
