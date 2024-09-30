@@ -8,6 +8,7 @@
   - [Installation](#installation)
   - [Usage](#usage)
     - [Configure Azure DevOps Organization URL, Project and PAT](#configure-azure-devops-organization-url-project-and-pat)
+    - [Open the Extension view](#open-the-extension-view)
     - [Filter project](#filter-project)
     - [View Pipelines](#view-pipelines)
     - [View Logs](#view-logs)
@@ -61,6 +62,12 @@ When the extension runs for the first time, it will prompt you to enter your Azu
 
 - **Organization URL**: The URL of your Azure DevOps organization (e.g., `https://dev.azure.com/your-organization`).
 - **Personal Access Token (PAT)**: The PAT required for authentication. You can create a PAT in Azure DevOps [here](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate).
+
+### Open the Extension view
+
+- Click on the extension icon
+
+   ![alt text](images/image3.png)
 
 ### Filter project
 
