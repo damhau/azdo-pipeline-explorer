@@ -12,7 +12,9 @@
     - [Filter project](#filter-project)
     - [View Pipelines](#view-pipelines)
     - [View Logs](#view-logs)
+    - [Update configuration](#update-configuration)
     - [Auto refresh](#auto-refresh)
+    - [Auto refresh](#auto-refresh-1)
   - [Settings](#settings)
   - [Requirements](#requirements)
   - [How to Create a PAT in Azure DevOps](#how-to-create-a-pat-in-azure-devops)
@@ -23,7 +25,7 @@
 
 ## Introduction
 
-This Visual Studio Code extension connects to Azure DevOps and allows you to view the status of the last pipelines and their logs, directly from the VS Code interface. It also provides auto-refresh functionality and pipeline log details in an output channel.
+This Visual Studio Code extension connects to Azure DevOps and allows you to select a project and view the status of the last pipelines and their logs. It also provides auto-refresh functionality and pipeline log details in an output channel.
 
 ## Features
 
@@ -71,7 +73,7 @@ When the extension runs for the first time, it will prompt you to enter your Azu
 
 ### Filter project
 
-- Click on the cogs in the project list view and select the list of project you want to see
+- Click on the filter icon in the project list view and select the list of project you want to see
 
   ![alt text](images/image2.png)
 
@@ -85,11 +87,22 @@ When the extension runs for the first time, it will prompt you to enter your Azu
 
 - Click on a task from a pipeline to display the logs in the output channel. Each log entry provides detailed information about the pipeline run.
 
+### Update configuration
+
+- Click on the gear icon in the project view to reconfigure the extension and enter the Azure Devops Url and PAT.
+
 
 ### Auto refresh
 
 - You can start auto refresh of the pipeline list in the treeview with the command "Pipeline Explorer: Start Auto Refresh"
 - You can stop auto refresh of the pipeline list in the treeview with the command "Pipeline Explorer: Stop Auto Refresh"
+
+
+### Auto refresh
+
+- You can start auto refresh of the pipeline list in the treeview with the command "Pipeline Explorer: Start Auto Refresh"
+- You can stop auto refresh of the pipeline list in the treeview with the command "Pipeline Explorer: Stop Auto Refresh"
+
 
 
 ## Settings

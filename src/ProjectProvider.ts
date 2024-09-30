@@ -104,7 +104,7 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
 		if (this.projects.length === 0) {
 			// Return a special TreeItem that acts as a button to open the project filter
 			const filterItem = new ProjectItem(
-				"No projects available. Click to filter projects.",
+				"No projects available. Click the filter icon.",
 				"",
 				vscode.TreeItemCollapsibleState.None,
 				{
