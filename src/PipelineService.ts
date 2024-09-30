@@ -9,22 +9,19 @@ axiosRetry(axios, {
 
 export class PipelineService {
     private azureDevOpsOrgUrl: string;
-    private azureDevOpsProject: string;
+    // private azureDevOpsProject: string;
     private userAgent: string;
     private azureDevOpsApiVersion: string;
 
-    constructor(orgUrl: string, project: string, userAgent: string, apiVersion: string) {
+    constructor(orgUrl: string, userAgent: string, apiVersion: string) {
         this.azureDevOpsOrgUrl = orgUrl;
-        this.azureDevOpsProject = project;
+        // this.azureDevOpsProject = project;
         this.userAgent = userAgent;
         this.azureDevOpsApiVersion = apiVersion;
     }
 
     async getPipelines(personalAccessToken: string, maxItems: number, azureSelectedDevOpsProject: string) {
         const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/build/builds?api-version=${this.azureDevOpsApiVersion}&queryOrder=queueTimeDescending`;
-
-
-
 
         try {
             const response = await axios.get(url, {
@@ -115,11 +112,15 @@ export class PipelineService {
         if (axios.isAxiosError(error)) {
             const axiosError = error as AxiosError;
             if (axiosError.response && axiosError.response.status === 401) {
+
                 await vscode.window.showErrorMessage('Authentication failed: Invalid or expired Personal Access Token (PAT). Please update your PAT.');
             } else {
+
                 await vscode.window.showErrorMessage(`Error: ${axiosError.message}`);
             }
+
         } else {
+
             await vscode.window.showErrorMessage(`An unknown error occurred: ${error}`);
         }
         return [];

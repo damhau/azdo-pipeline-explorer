@@ -2,9 +2,7 @@
 import * as vscode from 'vscode';
 import { SecretManager } from './SecretManager';
 import { ConfigurationService } from './ConfigurationService';
-import axios, { AxiosError } from 'axios';
-import axiosRetry from 'axios-retry';
-
+import { ProjectService } from './ProjectService';
 
 class ProjectItem extends vscode.TreeItem {
 	constructor(
@@ -14,6 +12,7 @@ class ProjectItem extends vscode.TreeItem {
 		public readonly command?: vscode.Command
 	) {
 		super(label, collapsibleState);
+		this.iconPath = new vscode.ThemeIcon('repo');
 	}
 }
 
@@ -22,45 +21,73 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
 	private _onDidChangeTreeData: vscode.EventEmitter<ProjectItem | undefined | null | void> = new vscode.EventEmitter<ProjectItem | undefined | null | void>();
 	readonly onDidChangeTreeData: vscode.Event<ProjectItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
-	constructor(private secretManager: SecretManager, private configurationService: ConfigurationService) { }
-
 	private projects: ProjectItem[] = [];
-	private allowedProjectIds: string[] = ['51e05c39-809d-4918-b65e-ef4f3217307c', '0075e175-4cd3-4c67-97f2-996008caa278', '63bc76d1-79ae-4565-9435-3559616b821d']; //
+
+	private allowedProjectIds: string[] = [];
+	private filteredProjects: string[] = [];
 
 
+	constructor(private secretManager: SecretManager, private projectService: ProjectService, private configurationService: ConfigurationService) { }
 
+    async promptForProjectSelection(): Promise<void> {
+        const pat = await this.secretManager.getSecret('PAT');
 
+        if (pat) {
+            const allProjects = await this.projectService.listProjects(pat);
+			const sortedProjects = allProjects.sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+            const selectedProjects = await vscode.window.showQuickPick(
+                sortedProjects.map((project: any) => ({
+                    label: project.name,
+                    description: project.id,
+                })),
+                {
+                    canPickMany: true,
+                    placeHolder: 'Select projects to show in the view',
+                }
+            );
+
+            if (selectedProjects) {
+                const tempallowedProjectIds = selectedProjects.map(project => project.description);
+
+                // Store selected projects in global state
+                await this.configurationService.updateFilteredprojectInGlobalState(tempallowedProjectIds);
+
+                // Refresh tree view
+                this.refresh();
+            }
+        }
+		else {
+            vscode.window.showErrorMessage('Failed to get project list.');
+        }
+    }
 
 
 	async refresh(): Promise<void> {
 
 		const pat = await this.secretManager.getSecret('PAT');
-		const orgUrl = this.configurationService.getConfiguration().azureDevOpsOrgUrl;
+		const allProjects = await this.projectService.listProjects(pat!);
 
-		if (orgUrl && pat) {
-			try {
-				const response = await axios.get(`${orgUrl}/_apis/projects?api-version=6.0`, {
-					headers: {
-						'User-Agent': this.configurationService.getConfiguration().userAgent,
-						'Authorization': `Basic ${Buffer.from(':' + pat).toString('base64')}`
-					}
-				});
+		this.allowedProjectIds = this.configurationService.getFilteredProjectsFromGlobalState() || [];
 
+		if(this.allowedProjectIds.length === 0){
+			this.filteredProjects = allProjects;
 
-                const filteredProjects = response.data.value.filter((project: any) =>
-                    this.allowedProjectIds.includes(project.id)
-                );
+		}else{
+			this.filteredProjects = allProjects.filter((project: any) =>
+				this.allowedProjectIds.includes(project.id)
+			);
 
-				this.projects = filteredProjects.map((project: any) => new ProjectItem(project.name, project.id, vscode.TreeItemCollapsibleState.None, {
-					command: 'azurePipelinesExplorer.selectProject',
-					title: 'Select Project',
-					arguments: [project.id]
-				}));
-			} catch (error) {
-
-				vscode.window.showErrorMessage('Failed to load projects');
-			}
 		}
+
+		const sortedProjects = this.filteredProjects.sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+		this.projects = sortedProjects.map((project: any) => new ProjectItem(project.name, project.id, vscode.TreeItemCollapsibleState.None, {
+			command: 'azurePipelinesExplorer.selectProject',
+			title: 'Select Project',
+			arguments: [project.id]
+		}));
+
 
 		this._onDidChangeTreeData.fire();
 	}
@@ -69,8 +96,28 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
 		return element;
 	}
 
-	getChildren(): ProjectItem[] {
+	// getChildren(): ProjectItem[] {
+	// 	return this.projects;
+	// }
+
+	async getChildren(): Promise<ProjectItem[]> {
+		if (this.projects.length === 0) {
+			// Return a special TreeItem that acts as a button to open the project filter
+			const filterItem = new ProjectItem(
+				"No projects available. Click to filter projects.",
+				"",
+				vscode.TreeItemCollapsibleState.None,
+				{
+					command: 'azurePipelinesExplorer.selectProjectsToShow',
+					title: 'Open Project Filter'
+				}
+			);
+
+			return [filterItem];
+		}
+
 		return this.projects;
 	}
+
 }
 

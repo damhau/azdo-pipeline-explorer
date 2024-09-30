@@ -8,6 +8,7 @@
   - [Installation](#installation)
   - [Usage](#usage)
     - [Configure Azure DevOps Organization URL, Project and PAT](#configure-azure-devops-organization-url-project-and-pat)
+    - [Filter project](#filter-project)
     - [View Pipelines](#view-pipelines)
     - [View Logs](#view-logs)
     - [Auto refresh](#auto-refresh)
@@ -25,6 +26,7 @@ This Visual Studio Code extension connects to Azure DevOps and allows you to vie
 
 ## Features
 
+- View the project in Azure DEvops with a optional filter
 - View the last 20 build pipelines in Azure DevOps. 20 is the default settings but it is customizable.
 - Display each pipeline stage as a hierarchy in a Vs Code treeview.
 - Display detailed pipeline logs by clicking on pipeline items.
@@ -58,12 +60,17 @@ The extension use the following Azure Devops apis:
 When the extension runs for the first time, it will prompt you to enter your Azure DevOps organization URL, Project and Personal Access Token (PAT). The PAT is securely stored for future use and the other parameters are saved in your in your VS Code `settings.json`.
 
 - **Organization URL**: The URL of your Azure DevOps organization (e.g., `https://dev.azure.com/your-organization`).
-- **Project**: The Azure Devops project.
 - **Personal Access Token (PAT)**: The PAT required for authentication. You can create a PAT in Azure DevOps [here](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate).
+
+### Filter project
+
+- Click on the cogs in the project list view and select the list of project you want to see
+
+  ![alt text](images/image2.png)
 
 ### View Pipelines
 
-- After the initial setup, the extension will display the last 20 pipelines of your Azure DevOps organization in a tree view on the Activity Bar (`Azure Devops Pipelines` view).
+- Click on a project to show the pipelines in the pipeline view
 - If there is a pipeline in progress the treeview will auto refresh. You can stop the auto refresh with the command "Pipeline Explorer: Stop Auto Refresh".
 - The icon of the pipeline item show that state of each stage/task.
 
@@ -84,13 +91,11 @@ The extension will configure the following settings automatically in your VS Cod
 
 ```json
 {
-  "pipelineExtension.azureDevOpsOrgUrl": "https://dev.azure.com/your-organization",
-  "pipelineExtension.azureDevOpsProject": "you project"
+  "pipelineExtension.azureDevOpsOrgUrl": "https://dev.azure.com/your-organization"
 }
 ```
 
 - `pipelineExtension.azureDevOpsOrgUrl`: The URL of your Azure DevOps organization.
-- `pipelineExtension.azureDevOpsProject`: The name of the Azure Devops project.
 
 There are optional settings that can be added in your VS Code `settings.json`:
 

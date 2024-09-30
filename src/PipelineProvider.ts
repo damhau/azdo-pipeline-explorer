@@ -69,11 +69,24 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
         const { azureDevOpsPipelineMaxItems} = this.configurationService.getConfiguration();
         const pat = await this.secretManager.getSecret('PAT');
 
-
+        // Retrieve the selected project from global state
         const azureDevOpsSelectedProject = this.configurationService.getSelectedProjectFromGlobalState();
 
+        // Check if no project is selected
+        if (!azureDevOpsSelectedProject) {
+            // Return a message indicating no project is selected
+            const noProjectSelectedItem = new PipelineItem(
+                'no-project',
+                'No project selected. Please select a project to view pipelines.',
+                vscode.TreeItemCollapsibleState.None,
+                'message'
+            );
+
+            return [noProjectSelectedItem];
+        }
 
         if (!element) {
+
             const pipelines = await this.pipelineService.getPipelines(pat!, azureDevOpsPipelineMaxItems, azureDevOpsSelectedProject!);
 
             const anyInProgress = pipelines.some((pipeline: any) => pipeline.status === 'inProgress');
@@ -83,6 +96,8 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
                 clearInterval(this.intervalId);
                 this.intervalId = null;
 
+            }else{
+                this.startAutoRefresh();
             }
 
             return pipelines.map((pipeline: any) => {

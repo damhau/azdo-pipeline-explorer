@@ -2,10 +2,10 @@ import * as vscode from 'vscode';
 
 import { SecretManager } from './SecretManager';
 import { PipelineService } from './PipelineService';
+import { ProjectService } from './ProjectService';
 import { ConfigurationService } from './ConfigurationService';
 import { PipelineProvider } from './PipelineProvider';
 import { ProjectProvider } from './ProjectProvider';
-import { debug } from 'console';
 
 export async function activate(context: vscode.ExtensionContext) {
 
@@ -20,16 +20,16 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     // Load configuration
-    const { azureDevOpsOrgUrl, azureDevOpsProject, azureDevOpsApiVersion, userAgent } = configurationService.getConfiguration();
+    const { azureDevOpsOrgUrl, azureDevOpsApiVersion, userAgent } = configurationService.getConfiguration();
 
     console.debug(`Azure Devops Pipeline Explorer Started`);
     console.debug(`Azure DevOps URL: ${azureDevOpsOrgUrl}`);
-    console.debug(`Azure DevOps Project: ${azureDevOpsProject}`);
 
     // Instanciate class of pipeline service (for api call) and pipelineProvider for vs code treeview
-    const pipelineService = new PipelineService(azureDevOpsOrgUrl, azureDevOpsProject, userAgent, azureDevOpsApiVersion);
+    const pipelineService = new PipelineService(azureDevOpsOrgUrl, userAgent, azureDevOpsApiVersion);
     const pipelineProvider = new PipelineProvider(secretManager, pipelineService, configurationService);
-    const projectProvider = new ProjectProvider(secretManager, configurationService);
+    const projectService = new ProjectService(azureDevOpsOrgUrl, userAgent, azureDevOpsApiVersion);
+    const projectProvider = new ProjectProvider(secretManager, projectService, configurationService);
 
     // Create the TreeView for the sidebar
     vscode.window.createTreeView('pipelineExplorer', {
@@ -59,15 +59,18 @@ export async function activate(context: vscode.ExtensionContext) {
             pipelineProvider.stopAutoRefresh();
         }),
         vscode.commands.registerCommand('azurePipelinesExplorer.selectProject', async (projectId: string) => {
-            // Update the selected project in the configuration
             await configurationService.updateSelectedProjectInGlobalState(projectId);
-            // Refresh the pipeline explorer to show pipelines for the new project
             pipelineProvider.refresh();
-        })
+        }),
+        vscode.commands.registerCommand('azurePipelinesExplorer.selectProjectsToShow', async () => {
+            await projectProvider.promptForProjectSelection();
+            pipelineProvider.refresh();
+        }),
+
     );
 
     // Start the auto-refresh when the extension is activated
-    pipelineProvider.startAutoRefresh();
+    //pipelineProvider.startAutoRefresh();
 
     // Ensure the interval is cleared when the extension is deactivated
     context.subscriptions.push({

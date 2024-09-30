@@ -40,3 +40,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## 0.7.8
 
 - remove custom user agent during setup
+
+## 0.8.0
+
+- add a view for the Azure devops project
+
+
+## 0.9.0
+
+- improve project selection and show message when no project is selected
