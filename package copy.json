@@ -26,19 +26,6 @@
         }
       ]
     },
-    "views": {
-      "pipeline-explorer": [
-        {
-          "id": "projectExplorer",
-          "name": "Azure DevOps Projects",
-          "when": "true"
-        },
-        {
-          "id": "pipelineExplorer",
-          "name": "Azure DevOps Pipelines"
-        }
-      ]
-    },
     "commands": [
       {
         "command": "azurePipelinesExplorer.refreshPipeline",
@@ -69,6 +56,20 @@
         "title": "Pipeline Explorer: Stop Auto Refresh"
       }
     ],
+    "pipelineExplorerSidebar": [
+      {
+        "id": "pipelineExplorer",
+        "name": "Azure DevOps Pipelines"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "pipelineExplorer",
+          "name": "Azure DevOps Pipelines"
+        }
+      ]
+    },
     "menus": {
       "view/title": [
         {

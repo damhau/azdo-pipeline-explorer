@@ -4,6 +4,7 @@ import { SecretManager } from './SecretManager';
 import { PipelineService } from './PipelineService';
 import { ConfigurationService } from './ConfigurationService';
 import { PipelineProvider } from './PipelineProvider';
+import { ProjectProvider } from './ProjectProvider';
 
 export async function activate(context: vscode.ExtensionContext) {
 
@@ -27,6 +28,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // Instanciate class of pipeline service (for api call) and pipelineProvider for vs code treeview
     const pipelineService = new PipelineService(azureDevOpsOrgUrl, azureDevOpsProject, userAgent, azureDevOpsApiVersion);
     const pipelineProvider = new PipelineProvider(secretManager, pipelineService, configurationService);
+    const projectProvider = new ProjectProvider(secretManager, configurationService);
 
     // Create the TreeView for the sidebar
     vscode.window.createTreeView('pipelineExplorer', {
@@ -34,6 +36,11 @@ export async function activate(context: vscode.ExtensionContext) {
         showCollapseAll: true, // Optional: Shows a "collapse all" button
     });
     vscode.window.registerTreeDataProvider('pipelineExplorer', pipelineProvider);
+
+    const projectTreeView = vscode.window.createTreeView('projectExplorer', {
+        treeDataProvider: projectProvider,
+        showCollapseAll: true
+    });
 
     context.subscriptions.push(
         vscode.commands.registerCommand('azurePipelinesExplorer.refreshPipeline', () => pipelineProvider.refresh()),

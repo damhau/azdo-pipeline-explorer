@@ -20,7 +20,7 @@ class PipelineItem extends vscode.TreeItem {
     }
 
     private getIconForResult(result?: string, status?: string, type?: string): vscode.ThemeIcon {
-        if (status === "inProgress" ) {
+        if (status === "inProgress") {
             return new vscode.ThemeIcon('sync');
         }
 
@@ -30,9 +30,11 @@ class PipelineItem extends vscode.TreeItem {
 
         switch (result) {
             case 'succeeded':
-                return new vscode.ThemeIcon('check');
+                // return new vscode.ThemeIcon('check');
+                return new vscode.ThemeIcon('pass', new vscode.ThemeColor('charts.green'));
             case 'failed':
-                return new vscode.ThemeIcon('error');
+                // return new vscode.ThemeIcon('error');
+                return new vscode.ThemeIcon('error', new vscode.ThemeColor('charts.red'));
             case 'in progress':
                 return new vscode.ThemeIcon('sync');
             default:
@@ -45,7 +47,7 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
     private _onDidChangeTreeData: vscode.EventEmitter<PipelineItem | undefined | null | void> = new vscode.EventEmitter<PipelineItem | undefined | null | void>();
     readonly onDidChangeTreeData: vscode.Event<PipelineItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
-    constructor(private secretManager: SecretManager, private pipelineService: PipelineService , private configurationService: ConfigurationService) { }
+    constructor(private secretManager: SecretManager, private pipelineService: PipelineService, private configurationService: ConfigurationService) { }
 
     public intervalId: NodeJS.Timeout | null = null;
 
@@ -67,7 +69,7 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
         if (!element) {
             const pipelines = await this.pipelineService.getPipelines(pat!, azureDevOpsPipelineMaxItems);
 
-			const anyInProgress = pipelines.some((pipeline: any) => pipeline.status === 'inProgress');
+            const anyInProgress = pipelines.some((pipeline: any) => pipeline.status === 'inProgress');
 
             if (!anyInProgress && this.intervalId) {
                 // Stop refreshing if no pipelines are in progress
@@ -107,12 +109,12 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
         else if (element.type === "stage") {
             const logsData = await this.pipelineService.getPipelineLogs(pat!, element.pipelineUrl!);
             const phases = logsData.records.filter((record: any) =>
-                 record.type === "Phase" && record.parentId === element.element_id
+                record.type === "Phase" && record.parentId === element.element_id
             );
             return phases.map((phase: any) => {
                 return new PipelineItem(
                     phase.id,
-                    phase.type + ": " + phase.name ,
+                    phase.type + ": " + phase.name,
                     vscode.TreeItemCollapsibleState.Collapsed,
                     "phase",
                     element.pipelineUrl,
@@ -124,12 +126,12 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
         else if (element.type === "phase") {
             const logsData = await this.pipelineService.getPipelineLogs(pat!, element.pipelineUrl!);
             const jobs = logsData.records.filter((record: any) =>
-                 record.type === "Job" && record.parentId === element.element_id
+                record.type === "Job" && record.parentId === element.element_id
             );
             return jobs.map((job: any) => {
                 return new PipelineItem(
                     job.id,
-                    job.type + ": " + job.name ,
+                    job.type + ": " + job.name,
                     vscode.TreeItemCollapsibleState.Collapsed,
                     "job",
                     element.pipelineUrl,
@@ -142,7 +144,7 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
             const logsData = await this.pipelineService.getPipelineLogs(pat!, element.pipelineUrl!);
 
             const tasks = logsData.records.filter((record: any) =>
-                 record.type === "Task" && record.parentId === element.element_id
+                record.type === "Task" && record.parentId === element.element_id
             );
 
             const orderedTasks = tasks.sort((a: any, b: any) => {
@@ -152,7 +154,7 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
             return orderedTasks.map((task: any) => {
                 return new PipelineItem(
                     task.id,
-                    task.type + ": " + task.name ,
+                    task.type + ": " + task.name,
                     vscode.TreeItemCollapsibleState.None,
                     "task",
                     element.pipelineUrl,
