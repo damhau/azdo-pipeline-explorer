@@ -2,7 +2,7 @@
   "name": "azdo-pipeline-explorer",
   "displayName": "Azure Devops Pipeline Explorer",
   "description": "This Visual Studio Code extension connects to your Azure DevOps organization and allows you to view the status of the last pipelines and their logs, directly from the VS Code interface.",
-  "version": "0.9.2",
+  "version": "0.10.0",
   "icon": "images/azdopipeline.png",
   "repository": {
     "url": "https://github.com/damhau/azdo-pipeline-explorer"
@@ -34,8 +34,12 @@
           "when": "true"
         },
         {
-          "id": "pipelineExplorer",
+          "id": "pipelineExplorerFolder",
           "name": "Azure DevOps Pipelines"
+        },
+        {
+          "id": "pipelineExplorer",
+          "name": "Azure DevOps Pipelines Runs"
         }
       ]
     },
@@ -49,6 +53,14 @@
         }
       },
       {
+        "command": "azurePipelinesExplorer.refreshPipelineDefinition",
+        "title": "Pipeline Explorer: Refresh Pipelines Definition",
+        "icon": {
+          "light": "images/light/refresh.svg",
+          "dark": "images/dark/refresh.svg"
+        }
+      },
+      {
         "command": "azurePipelinesExplorer.showLogDetails",
         "title": "Pipeline Explorer: Show Logs"
       },
@@ -56,7 +68,6 @@
         "command": "azurePipelinesExplorer.configure",
         "title": "Pipeline Explorer: Configure",
         "icon": "$(gear)"
-
       },
       {
         "command": "azurePipelinesExplorer.updatePat",
@@ -74,6 +85,21 @@
         "command": "azurePipelinesExplorer.selectProjectsToShow",
         "title": "Pipeline Explorer: Select Projects to Show",
         "icon": "$(filter)"
+      },
+      {
+        "command": "azurePipelinesExplorer.startPipeline",
+        "title": "Pipeline Explorer: Start a pipeline",
+        "icon": "$(debug-start)"
+      },
+      {
+        "command": "azurePipelinesExplorer.approvePipeline",
+        "title": "Approve Pipeline",
+        "icon": "$(check)"
+      },
+      {
+        "command": "azurePipelinesExplorer.rejectPipeline",
+        "title": "Reject Pipeline",
+        "icon": "$(close)"
       }
     ],
     "menus": {
@@ -81,6 +107,11 @@
         {
           "command": "azurePipelinesExplorer.refreshPipeline",
           "when": "view == pipelineExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "azurePipelinesExplorer.refreshPipelineDefinition",
+          "when": "view == pipelineExplorerFolder",
           "group": "navigation"
         },
         {
@@ -92,6 +123,23 @@
           "command": "azurePipelinesExplorer.selectProjectsToShow",
           "when": "view == projectExplorer",
           "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "azurePipelinesExplorer.startPipeline",
+          "when": "view == pipelineExplorerFolder && viewItem == pipelineDefinitionItem",
+          "group": "inline@1"
+        },
+        {
+          "command": "azurePipelinesExplorer.rejectPipeline",
+          "when": "view == pipelineExplorer && viewItem == approval",
+          "group": "inline@1"
+        },
+        {
+          "command": "azurePipelinesExplorer.approvePipeline",
+          "when": "view == pipelineExplorer && viewItem == approval",
+          "group": "inline@1"
         }
       ]
     },
@@ -148,6 +196,7 @@
   },
   "dependencies": {
     "axios": "^1.7.7",
-    "axios-retry": "^4.5.0"
+    "axios-retry": "^4.5.0",
+    "yaml": "^2.5.1"
   }
 }

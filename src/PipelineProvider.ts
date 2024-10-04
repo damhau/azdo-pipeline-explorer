@@ -3,6 +3,18 @@ import { SecretManager } from './SecretManager';
 import { PipelineService } from './PipelineService';
 import { ConfigurationService } from './ConfigurationService';
 
+class FolderItem extends vscode.TreeItem {
+    constructor(
+        public readonly folderName: string,
+        public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+    ) {
+        super(folderName, collapsibleState);
+        this.iconPath = new vscode.ThemeIcon('folder');
+        this.contextValue = 'folderItem';
+    }
+}
+
+
 class PipelineItem extends vscode.TreeItem {
     constructor(
         public readonly element_id: string,
@@ -13,10 +25,13 @@ class PipelineItem extends vscode.TreeItem {
         public readonly result?: string,
         public readonly status?: string,
         public readonly logUrl?: string,
-        public readonly command?: vscode.Command
+        public readonly command?: vscode.Command,
+        public readonly approvalId?: string,
+
     ) {
         super(label, collapsibleState);
         this.iconPath = this.getIconForResult(result, status, type);
+        this.contextValue = this.getContextValue(result, status, type, approvalId);
     }
 
     private getIconForResult(result?: string, status?: string, type?: string): vscode.ThemeIcon {
@@ -40,6 +55,33 @@ class PipelineItem extends vscode.TreeItem {
             default:
                 return new vscode.ThemeIcon('circle-outline');
         }
+    }
+
+    private getContextValue(result?: string, status?: string, type?: string, approvalId?: any) {
+        if (status === "pending" && approvalId !== undefined) {
+            return "approval";
+        }else{
+            return type;
+        }
+
+
+    }
+
+}
+
+
+class PipelineDefinitionItem extends vscode.TreeItem {
+    constructor(
+        public readonly pipelineId: string,
+        public readonly label: string,
+        public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+        public readonly pipelineUrl?: string,
+        public readonly folder?: string,
+        // public readonly command?: vscode.Command
+    ) {
+        super(label, collapsibleState);
+        this.iconPath = new vscode.ThemeIcon('play-circle', new vscode.ThemeColor('charts.blue'));
+        this.contextValue = 'pipelineDefinitionItem';
     }
 }
 
@@ -115,7 +157,15 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
         else if (element.type === "pipeline") {
             const logsData = await this.pipelineService.getPipelineLogs(pat!, element.pipelineUrl!);
             const stages = logsData.records.filter((record: any) => record.type === "Stage");
+            const pendingApprovals = await this.pipelineService?.getPendingApprovals(pat!, azureDevOpsSelectedProject!,  element.id!);
+            let pendingApprovalId: any;
+            if (pendingApprovals.length > 0) {
+                pendingApprovalId = pendingApprovals[0].id;
+            }else{
+                pendingApprovalId = undefined;
+            }
 
+            console.debug('hasPendingApprovals', pendingApprovalId);
             return stages.map((stage: any) => {
                 return new PipelineItem(
                     stage.id,
@@ -124,7 +174,10 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
                     "stage",
                     element.pipelineUrl,
                     stage.result,
-                    stage.state
+                    stage.state,
+                    undefined,
+                    undefined,
+                    pendingApprovalId
                 );
             });
         }
@@ -213,4 +266,96 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
     }
 }
 
-export { PipelineItem, PipelineProvider };
+class PipelineDefinitionProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
+
+    private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined | null | void> = new vscode.EventEmitter<vscode.TreeItem | undefined | null | void>();
+    readonly onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
+
+    constructor(
+        private secretManager: SecretManager,
+        private pipelineService: PipelineService,
+        private configurationService: ConfigurationService
+    ) {}
+
+    refresh(): void {
+        this._onDidChangeTreeData.fire();
+    }
+
+    getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
+        return element;
+    }
+
+    async getChildren(element?: vscode.TreeItem): Promise<vscode.TreeItem[]> {
+        const pat = await this.secretManager.getSecret('PAT');
+        const { azureDevOpsPipelineMaxItems } = this.configurationService.getConfiguration();
+
+
+        // Retrieve the selected project from global state
+        const azureDevOpsSelectedProject = this.configurationService.getSelectedProjectFromGlobalState();
+
+        // Check if no project is selected
+        if (!azureDevOpsSelectedProject) {
+            // Return a message indicating no project is selected
+            const noProjectSelectedItem = new PipelineItem(
+                'no-project',
+                'No project selected. Please select a project to view pipelines.',
+                vscode.TreeItemCollapsibleState.None,
+                'message'
+            );
+
+            return [noProjectSelectedItem];
+        }
+
+        // Retrieve pipelines and group by folder if no element is selected
+        if (!element) {
+            const pipelines = await this.pipelineService.getPipelineDefinitions(pat!, 1000, azureDevOpsSelectedProject!);
+
+            const folders: { [key: string]: any[] } = {};
+
+            // Group pipelines by folder
+            pipelines.forEach((pipeline: { path: string; }) => {
+                const folder = pipeline.path || 'Uncategorized';
+                if (!folders[folder]) {
+                    folders[folder] = [];
+                }
+                folders[folder].push(pipeline);
+            });
+
+            // Sort folders alphabetically
+            const sortedFolderNames = Object.keys(folders).sort((a, b) => a.localeCompare(b));
+
+            // Create folder items based on sorted folder names
+            return sortedFolderNames.map(folderName => {
+                return new FolderItem(
+                    folderName,
+                    vscode.TreeItemCollapsibleState.Collapsed
+                );
+            });
+        }
+        // Handle pipelines within a folder
+        else if (element instanceof FolderItem) {
+            const folderName = element.folderName;
+            const pipelines = await this.pipelineService.getPipelineDefinitionsByFolder(pat!, folderName, azureDevOpsSelectedProject!);
+
+            // Return pipelines within the folder
+            return pipelines.map(pipeline => {
+                return new PipelineDefinitionItem(
+                    pipeline.id,
+                    pipeline.name,
+                    vscode.TreeItemCollapsibleState.None,
+                    pipeline._links.web.href,
+                    folderName
+                    // {
+                    //     command: 'azurePipelinesExplorer.startPipeline',
+                    //     title: 'Start Pipeline',
+                    //     arguments: [pat!, pipeline.id, azureDevOpsSelectedProject]
+                    // }
+                );
+            });
+        }
+        return [];
+    }
+}
+
+
+export { PipelineItem, PipelineProvider, PipelineDefinitionProvider };

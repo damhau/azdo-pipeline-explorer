@@ -17,7 +17,7 @@ export class ConfigurationService {
         const config = vscode.workspace.getConfiguration('azurePipelinesExplorer');
         return {
             azureDevOpsOrgUrl: config.get<string>('azureDevOpsOrgUrl') || '',
-            azureDevOpsApiVersion: config.get<string>('azureDevOpsApiVersion') || '7.0',
+            azureDevOpsApiVersion: config.get<string>('azureDevOpsApiVersion') || '7.1',
             userAgent: config.get<string>('userAgent') || `azure-devops-pipeline-explorer-extension/1.0 (${os.platform()}; ${os.release()})`,
             azureSelectedDevOpsProject: config.get<string>('userAgent') || '',
             azureDevOpsPipelineMaxItems: config.get<number>('azureDevOpsPipelineMaxItems') || 20

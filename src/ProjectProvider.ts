@@ -1,4 +1,3 @@
-// src/ProjectProvider.ts
 import * as vscode from 'vscode';
 import { SecretManager } from './SecretManager';
 import { ConfigurationService } from './ConfigurationService';
@@ -96,9 +95,6 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
 		return element;
 	}
 
-	// getChildren(): ProjectItem[] {
-	// 	return this.projects;
-	// }
 
 	async getChildren(): Promise<ProjectItem[]> {
 		if (this.projects.length === 0) {

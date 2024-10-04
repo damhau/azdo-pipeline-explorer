@@ -1,4 +1,3 @@
-// src/ProjectService.ts
 import axios, { AxiosError } from 'axios';
 import axiosRetry from 'axios-retry';
 import * as vscode from 'vscode';

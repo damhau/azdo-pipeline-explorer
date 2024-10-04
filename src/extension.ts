@@ -4,7 +4,7 @@ import { SecretManager } from './SecretManager';
 import { PipelineService } from './PipelineService';
 import { ProjectService } from './ProjectService';
 import { ConfigurationService } from './ConfigurationService';
-import { PipelineProvider } from './PipelineProvider';
+import { PipelineProvider, PipelineDefinitionProvider } from './PipelineProvider';
 import { ProjectProvider } from './ProjectProvider';
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -25,26 +25,34 @@ export async function activate(context: vscode.ExtensionContext) {
     console.debug(`Azure Devops Pipeline Explorer Started`);
     console.debug(`Azure DevOps URL: ${azureDevOpsOrgUrl}`);
 
-    // Instanciate class of pipeline service (for api call) and pipelineProvider for vs code treeview
+    // Instantiate class of pipeline service (for api call) and pipelineProvider for vs code treeview
     const pipelineService = new PipelineService(azureDevOpsOrgUrl, userAgent, azureDevOpsApiVersion);
     const pipelineProvider = new PipelineProvider(secretManager, pipelineService, configurationService);
+    const pipelineDefinitionProvider = new PipelineDefinitionProvider(secretManager, pipelineService, configurationService);
     const projectService = new ProjectService(azureDevOpsOrgUrl, userAgent, azureDevOpsApiVersion);
     const projectProvider = new ProjectProvider(secretManager, projectService, configurationService);
 
-    // Create the TreeView for the sidebar
-    vscode.window.createTreeView('pipelineExplorer', {
-        treeDataProvider: pipelineProvider,
-        showCollapseAll: true, // Optional: Shows a "collapse all" button
-    });
-    vscode.window.registerTreeDataProvider('pipelineExplorer', pipelineProvider);
+
 
     vscode.window.createTreeView('projectExplorer', {
         treeDataProvider: projectProvider,
         showCollapseAll: true
     });
+
+    vscode.window.createTreeView('pipelineExplorerFolder', {
+        treeDataProvider: pipelineDefinitionProvider,
+        showCollapseAll: true,
+    });
+
+    vscode.window.createTreeView('pipelineExplorer', {
+        treeDataProvider: pipelineProvider,
+        showCollapseAll: true,
+    });
+
     await projectProvider.refresh();
     context.subscriptions.push(
         vscode.commands.registerCommand('azurePipelinesExplorer.refreshPipeline', () => pipelineProvider.refresh()),
+        vscode.commands.registerCommand('azurePipelinesExplorer.refreshPipelineDefinition', () => pipelineDefinitionProvider.refresh()),
         vscode.commands.registerCommand('azurePipelinesExplorer.configure', () => configurationService.updateConfiguration()),
         vscode.commands.registerCommand('azurePipelinesExplorer.updatePat', () => configurationService.updatePat()),
         vscode.commands.registerCommand('azurePipelinesExplorer.showLogDetails', async (azureDevOpsPAT: string, logURL: string) => {
@@ -60,17 +68,35 @@ export async function activate(context: vscode.ExtensionContext) {
         }),
         vscode.commands.registerCommand('azurePipelinesExplorer.selectProject', async (projectId: string) => {
             await configurationService.updateSelectedProjectInGlobalState(projectId);
+            await pipelineDefinitionProvider.refresh();
             pipelineProvider.refresh();
         }),
         vscode.commands.registerCommand('azurePipelinesExplorer.selectProjectsToShow', async () => {
             await projectProvider.promptForProjectSelection();
-            pipelineProvider.refresh();
+            await pipelineDefinitionProvider.refresh();
+            await pipelineProvider.refresh();
         }),
+        vscode.commands.registerCommand('azurePipelinesExplorer.startPipeline', async (pipelineDefinition) => {
+                const pat = await secretManager.getSecret('PAT');
+                await pipelineService.startPipeline(pat!, pipelineDefinition.pipelineId, configurationService.getSelectedProjectFromGlobalState()!);
+                pipelineProvider.refresh();
 
+        }),
+		vscode.commands.registerCommand('azurePipelinesExplorer.approvePipeline', async (pipeline) => {
+            console.debug(`Approving pipeline ${pipeline.approvalId}`);
+            console.debug(`Approving pipeline ${pipeline.id}`);
+            const pat = await secretManager.getSecret('PAT');
+            await pipelineService.approvePipeline(pat!, pipeline.approvalId, configurationService.getSelectedProjectFromGlobalState()!);
+		}),
+		vscode.commands.registerCommand('azurePipelinesExplorer.rejectPipeline', async (pipeline) => {
+            console.debug(`Approving pipeline ${pipeline.approvalId}`);
+            console.debug(`Approving pipeline ${pipeline.id}`);
+            const pat = await secretManager.getSecret('PAT');
+            await pipelineService.rejectPipeline(pat!, pipeline.approvalId, configurationService.getSelectedProjectFromGlobalState()!);
+
+		}),
     );
 
-    // Start the auto-refresh when the extension is activated
-    //pipelineProvider.startAutoRefresh();
 
     // Ensure the interval is cleared when the extension is deactivated
     context.subscriptions.push({
@@ -83,3 +109,4 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() { }
+

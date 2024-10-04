@@ -1,7 +1,8 @@
-// src/PipelineService.ts
 import axios, { AxiosError } from 'axios';
 import axiosRetry from 'axios-retry';
 import * as vscode from 'vscode';
+import { parse, stringify } from 'yaml';
+// import YAML from 'yaml';
 
 axiosRetry(axios, {
     retries: 3, // Number of retries (Defaults to 3)
@@ -43,6 +44,459 @@ export class PipelineService {
             return this.handleError(error);
         }
     }
+
+    async getPipelineDefinitions(personalAccessToken: string, maxItems: number, azureSelectedDevOpsProject: string): Promise<any[]> {
+        const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/build/definitions?api-version=${this.azureDevOpsApiVersion}`;
+
+        try {
+            const response = await axios.get(url, {
+                headers: {
+                    'User-Agent': this.userAgent,
+                    'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
+                }
+            });
+
+            const pipelineDefinitions = response.data.value.slice(0, maxItems);
+            return pipelineDefinitions;
+        } catch (error: unknown) {
+            return this.handleError(error);
+        }
+    }
+
+    // Filter pipeline definitions by folder
+    async getPipelineDefinitionsByFolder(personalAccessToken: string, folderName: string, azureSelectedDevOpsProject: string): Promise<any[]> {
+        const pipelines = await this.getPipelineDefinitions(personalAccessToken, 1000, azureSelectedDevOpsProject); // Assuming max 100 pipelines for now
+
+        // Filter pipelines by the folder attribute
+        const pipelinesInFolder = pipelines.filter((pipeline: any) => pipeline.path === folderName);
+
+        return pipelinesInFolder;
+    }
+
+    async getPipelinesByFolder(personalAccessToken: string, folderName: string, azureSelectedDevOpsProject: string): Promise<any[]> {
+        const pipelines = await this.getPipelines(personalAccessToken, 100, azureSelectedDevOpsProject); // Assuming fetching max 100 pipelines for now
+
+        // Filter pipelines by the folder attribute
+        const pipelinesInFolder = pipelines.filter((pipeline: any) => pipeline.folder === folderName);
+
+        return pipelinesInFolder;
+    }
+
+    async getPipelineDefinition(personalAccessToken: string, pipelineId: string, azureSelectedDevOpsProject: string): Promise<any> {
+        const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/build/definitions/${pipelineId}?api-version=${this.azureDevOpsApiVersion}`;
+
+        try {
+            const response = await axios.get(url, {
+                headers: {
+                    'User-Agent': this.userAgent,
+                    'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
+                }
+            });
+            return response.data;
+        } catch (error: unknown) {
+            return this.handleError(error);
+        }
+    }
+
+    async getPipelineApproval(personalAccessToken: string, azureSelectedDevOpsProject: string, approvalId: string): Promise<any> {
+        const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/pipelines/approvals/${approvalId}`;
+
+        try {
+            const response = await axios.get(url, {
+                headers: {
+                    'User-Agent': this.userAgent,
+                    'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
+                }
+            });
+            return response.data;
+        } catch (error: unknown) {
+            return this.handleError(error);
+        }
+    }
+
+    // Fetch the branches for a repository
+    async getRepositoryBranches(personalAccessToken: string, repositoryId: string,  azureSelectedDevOpsProject: string): Promise<string[]> {
+        const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/git/repositories/${repositoryId}/refs?filter=heads/&api-version=${this.azureDevOpsApiVersion}`;
+
+        try {
+            const response = await axios.get(url, {
+                headers: {
+                    'User-Agent': this.userAgent,
+                    'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
+                }
+            });
+
+            // Extract the branch names from the refs
+            const branches = response.data.value.map((ref: any) => ref.name.replace('refs/heads/', ''));
+            return branches;
+        } catch (error: unknown) {
+            return this.handleError(error);
+        }
+    }
+
+    // Show a dialog to allow the user to choose a branch
+    async promptForBranchSelection(branches: string[]): Promise<string | undefined> {
+        const selectedBranch = await vscode.window.showQuickPick(branches, {
+            placeHolder: 'Select the branch to run the pipeline on'
+        });
+
+        return selectedBranch;
+    }
+
+    async promptForComponentSelection(values: string[]): Promise<string | undefined> {
+        const selectedComponent= await vscode.window.showQuickPick(values, {
+            placeHolder: 'Select the branch to run the pipeline on'
+        });
+
+        return selectedComponent;
+    }
+
+    async promptForEnvironmentSelection(values: string[]): Promise<string | undefined> {
+        const selectedEnvironment = await vscode.window.showQuickPick(values, {
+            placeHolder: 'Select the environment of the pipeline to run'
+        });
+
+        return selectedEnvironment;
+    }
+
+    async getFileContents(personalAccessToken: string, azureSelectedDevOpsProject: string, repository: string, path: string){
+        const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/git/repositories/${repository}/items/${path.replace("/","%2F").replace("/","%2F").replace("/","%2F").replace("/","%2F")}`;
+
+        try {
+            const response = await axios.get(url, {
+                headers: {
+                    'User-Agent': this.userAgent,
+                    'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`,
+                    'Accept': 'text/plain', // Since we are retrieving a file
+                }
+            });
+
+            return response.data || 'No content available';
+
+        } catch (error: unknown) {
+            return this.handleError(error);
+        }
+    }
+
+    async getPipelineComponent(yaml: string) {
+        const yamlContent = parse(yaml, { version: "1.1" });
+        const pipelineParameters = yamlContent.parameters;
+
+        if (!pipelineParameters) {
+            return [];
+        }else{
+            if (pipelineParameters[0].name === "component") {
+
+                return pipelineParameters[0].values;
+
+            }else{
+                return [];
+
+            }
+
+
+        }
+
+    }
+
+    async getPipelineEnvironment(yaml: string) {
+        const yamlContent = parse(yaml, { version: "1.1" });
+
+        const pipelineParameters = yamlContent.parameters;
+
+        if (!pipelineParameters) {
+            return [];
+        }else{
+            if (pipelineParameters[1].name === "environment") {
+
+                return pipelineParameters[1].values;
+
+            }else{
+                return [];
+
+            }
+
+
+        }
+
+    }
+
+    async getPendingApprovals(
+        personalAccessToken: string,
+        azureSelectedDevOpsProject: string,
+        pipelineId: string
+    ): Promise<any[]> {
+        const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/pipelines/approvals`;
+
+        try {
+            const response = await axios.get(url, {
+                headers: {
+                    'User-Agent': this.userAgent,
+                    'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
+                }
+            });
+
+            // Filter approvals based on the pipeline ID
+            const approvals = response.data.value;
+            const pipelineApprovals = approvals.filter((approval: any) => approval.owner?.id === pipelineId);
+
+            // Check if there are any pending approvals
+            const hasPendingApprovals = pipelineApprovals.some((approval: any) => approval.status === 'pending');
+            if (hasPendingApprovals) {
+                return approvals;
+            }else{
+                return [];
+            }
+        } catch (error: unknown) {
+            this.handleError(error);
+            return [];
+        }
+    }
+
+
+
+
+    // Start a pipeline by making a POST request to /_apis/build/builds
+    async startPipeline(personalAccessToken: string, pipelineId: string, azureSelectedDevOpsProject: string) {
+        const pipelineDefinition = await this.getPipelineDefinition(personalAccessToken, pipelineId, azureSelectedDevOpsProject);
+
+        if (!pipelineDefinition || !pipelineDefinition.repository || !pipelineDefinition.repository.id) {
+            vscode.window.showErrorMessage('Failed to get repository information for the pipeline.');
+            return;
+        }
+
+        const repositoryId = pipelineDefinition.repository.id;
+        const pipelineYamlFile = pipelineDefinition.process.yamlFilename;
+
+
+        // Get the parameters from the pipeline file
+        const pipelineYamlFileContent = await this.getFileContents(personalAccessToken, azureSelectedDevOpsProject, repositoryId, pipelineYamlFile);
+        const pipelineComponents = await this.getPipelineComponent(pipelineYamlFileContent);
+        const pipelineEnvironments = await this.getPipelineEnvironment(pipelineYamlFileContent);
+
+        // Get the branches for the repository
+        const branches = await this.getRepositoryBranches(personalAccessToken, repositoryId, azureSelectedDevOpsProject);
+
+        if (!branches || branches.length === 0) {
+            vscode.window.showErrorMessage('No branches found for the repository.');
+            return;
+        }
+
+        // Prompt the user to select a branch
+        const selectedBranch = await this.promptForBranchSelection(branches);
+
+        if (!selectedBranch) {
+            vscode.window.showErrorMessage('No branch selected.');
+            return;
+        }
+        let body: any;
+        if (pipelineComponents.length > 0 && pipelineEnvironments.length > 0) {
+            const selectedComponent = await this.promptForComponentSelection(pipelineComponents);
+            const selectedEnvironment = await this.promptForEnvironmentSelection(pipelineEnvironments);
+
+            if (!selectedComponent || !selectedEnvironment) {
+                vscode.window.showErrorMessage('No Component or Environment selected.');
+                return;
+            }
+            body = {
+                definition: {
+                    id: pipelineId
+                },
+                sourceBranch: `refs/heads/${selectedBranch}`, // The selected branch
+                templateParameters: {
+                    component: selectedComponent,
+                    environment: selectedEnvironment
+                  }
+            };
+
+        }else{
+            body = {
+                definition: {
+                    id: pipelineId
+                },
+                sourceBranch: `refs/heads/${selectedBranch}`, // The selected branch
+            };
+
+        }
+
+        // Start the pipeline with the selected branch
+        const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/build/builds?api-version=${this.azureDevOpsApiVersion}`;
+
+        await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: "Starting pipeline",
+            cancellable: false
+        }, async (progress) => {
+            progress.report({ message: `Starting pipeline: ${pipelineId}` });
+            try {
+                const response = await axios.post(
+                    url,
+                    body,
+                    {
+                        headers: {
+                            'User-Agent': this.userAgent,
+                            'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
+                        }
+                    }
+                );
+
+                progress.report({ message: `Pipeline: ${pipelineId} started successfully.` });
+                const prUrl = response.data._links.web.href;
+                await vscode.env.clipboard.writeText(prUrl);
+
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+            } catch (error: unknown) {
+                this.handleError(error);
+            }
+
+
+
+
+        });
+
+        await vscode.commands.executeCommand("azurePipelinesExplorer.refreshPipeline");
+
+    }
+
+
+    // Start a pipeline by making a POST request to /_apis/build/builds
+    async approvePipeline(personalAccessToken: string, approvalIdId: string, azureSelectedDevOpsProject: string) {
+        const pipelineApproval = await this.getPipelineApproval(personalAccessToken, azureSelectedDevOpsProject, approvalIdId);
+
+        if (!pipelineApproval.instructions) {
+            const confirm = await vscode.window.showWarningMessage(
+                `Are you sure you want to approve this pipeline?`,
+                { modal: true },
+                'Yes', 'No'
+            );
+
+            if (confirm !== 'Yes') {
+                return;
+            }
+        }else{
+            const confirm = await vscode.window.showWarningMessage(
+                `${pipelineApproval.instructions}?`,
+                { modal: true },
+                'Yes', 'No'
+            );
+
+            if (confirm !== 'Yes') {
+                return;
+            }
+        }
+        const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/pipelines/approvals?api-version=7.1-preview`;
+        console.debug(`Approving pipeline ${approvalIdId}`);
+        console.debug(`url ${url}`);
+        console.debug(`personalAccessToken ${personalAccessToken}`);
+        try {
+
+            const response = await axios.patch(
+                url,
+                [
+                    {
+                        "approvalId": approvalIdId,
+                        "comment": "Approving",
+                        "status": "approved"
+                    }
+                ]
+                  ,
+                {
+                    headers: {
+                        'User-Agent': this.userAgent,
+                        'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
+                    }
+                }
+            );
+
+            vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: `Approving Pipeline`,
+                    cancellable: false,
+                },
+                async (progress, token) => {
+                    for (let i = 0; i < 2; i++) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        setTimeout(() => {
+                            progress.report({ increment: i * 10, message: '' });
+                        }, 10000);
+                    }
+                }
+            );
+
+
+        } catch (error: unknown) {
+            return this.handleError(error);
+        }
+
+
+
+    }
+
+    async rejectPipeline(personalAccessToken: string, approvalIdId: string, azureSelectedDevOpsProject: string) {
+        const pipelineApproval = await this.getPipelineApproval(personalAccessToken, azureSelectedDevOpsProject, approvalIdId);
+
+        const confirm = await vscode.window.showWarningMessage(
+            `Are you sure you want to reject this pipeline?`,
+            { modal: true },
+            'Yes', 'No'
+        );
+
+        if (confirm !== 'Yes') {
+            return;
+        }
+
+        const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/pipelines/approvals?api-version=7.1-preview`;
+        console.debug(`Approving pipeline ${approvalIdId}`);
+        console.debug(`url ${url}`);
+        console.debug(`personalAccessToken ${personalAccessToken}`);
+        try {
+
+            const response = await axios.patch(
+                url,
+                [
+                    {
+                        "approvalId": approvalIdId,
+                        "comment": "Rejecting",
+                        "status": "rejected"
+                    }
+                ]
+                  ,
+                {
+                    headers: {
+                        'User-Agent': this.userAgent,
+                        'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
+                    }
+                }
+            );
+
+            vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: `Rejecting Pipeline`,
+                    cancellable: false,
+                },
+                async (progress, token) => {
+                    for (let i = 0; i < 2; i++) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        setTimeout(() => {
+                            progress.report({ increment: i * 10, message: '' });
+                        }, 10000);
+                    }
+                }
+            );
+
+
+        } catch (error: unknown) {
+            return this.handleError(error);
+        }
+
+
+
+    }
+
+
 
     async getPipelineLogs(personalAccessToken: string, url: string) {
         try {
@@ -115,12 +569,18 @@ export class PipelineService {
 
                 await vscode.window.showErrorMessage('Authentication failed: Invalid or expired Personal Access Token (PAT). Please update your PAT.');
             } else {
-
+                console.debug(error);
+                if (axiosError.response && axiosError.response.data) {
+                    const errorMessage = axiosError.response?.data && typeof axiosError.response.data === 'object' && 'message' in axiosError.response.data
+                        ? axiosError.response.data.message
+                        : 'An unknown error occurred';
+                    await vscode.window.showErrorMessage(`Error: ${errorMessage}`);
+                }
                 await vscode.window.showErrorMessage(`Error: ${axiosError.message}`);
             }
 
         } else {
-
+            console.debug(error);
             await vscode.window.showErrorMessage(`An unknown error occurred: ${error}`);
         }
         return [];

@@ -49,3 +49,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## 0.9.0
 
 - improve project selection and show message when no project is selected
+
+## 0.10.0
+
+- add view for pipeline definitions
+- add button and command to start pipeline
+- add button to approve or reject a pipeline that is pending on an approval
+

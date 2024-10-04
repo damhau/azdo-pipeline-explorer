@@ -10,7 +10,9 @@
     "typescript.tsc.autoDetect": "off",
     "editor.insertSpaces": false,
     "cSpell.words": [
+        "filecontents",
         "Filteredproject",
-        "tempallowed"
+        "tempallowed",
+        "Uncategorized"
     ],
 }
