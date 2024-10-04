@@ -10,7 +10,8 @@
     - [Configure Azure DevOps Organization URL, Project and PAT](#configure-azure-devops-organization-url-project-and-pat)
     - [Open the Extension view](#open-the-extension-view)
     - [Filter project](#filter-project)
-    - [View Pipelines](#view-pipelines)
+    - [View Pipeline Definitions](#view-pipeline-definitions)
+    - [View Pipeline Runs](#view-pipeline-runs)
     - [View Logs](#view-logs)
     - [Update configuration](#update-configuration)
     - [Auto refresh](#auto-refresh)
@@ -29,7 +30,9 @@ This Visual Studio Code extension connects to Azure DevOps and allows you to sel
 
 ## Features
 
-- View the project in Azure DEvops with a optional filter
+- View the project in Azure DEvops with a optional filter.
+- View the pipeline definition with their folder structure.
+- Start and approve pipelines.
 - View the last 20 build pipelines in Azure DevOps. 20 is the default settings but it is customizable.
 - Display each pipeline stage as a hierarchy in a Vs Code treeview.
 - Display detailed pipeline logs by clicking on pipeline items.
@@ -77,7 +80,14 @@ When the extension runs for the first time, it will prompt you to enter your Azu
 
   ![alt text](images/image2.png)
 
-### View Pipelines
+
+### View Pipeline Definitions
+
+- Click on a project to show the pipeline definition in the pipeline definition view
+- select a pipeline and click on the start icon so start it
+- if the pipeline yaml file has a parameter vs code will ask you to input a value
+
+### View Pipeline Runs
 
 - Click on a project to show the pipelines in the pipeline view
 - If there is a pipeline in progress the treeview will auto refresh. You can stop the auto refresh with the command "Pipeline Explorer: Stop Auto Refresh".

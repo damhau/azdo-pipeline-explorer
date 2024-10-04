@@ -430,7 +430,7 @@ export class PipelineService {
             return this.handleError(error);
         }
 
-
+        await vscode.commands.executeCommand("azurePipelinesExplorer.refreshPipeline");
 
     }
 
@@ -492,7 +492,7 @@ export class PipelineService {
             return this.handleError(error);
         }
 
-
+        await vscode.commands.executeCommand("azurePipelinesExplorer.refreshPipeline");
 
     }
 
