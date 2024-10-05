@@ -18,8 +18,9 @@ jobs:
       - run: npm install --save-dev semantic-release semantic-release-vsce
       - run: npx semantic-release
         env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          # In case you want to publish to Visual Studio Marketplace
           VSCE_PAT: ${{ secrets.VSCE_TOKEN }}
-
       # - name: Run semantice release
       #   run: |
       #     npx semantic-release
