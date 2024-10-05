@@ -11,14 +11,27 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.SEMVER_APPID }}
+          private-key: ${{ secrets.SEMVER_SECRET }}
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+      - run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
       - uses: actions/setup-node@v3
         with:
           node-version: 20
       - run: npm install --save-dev semantic-release semantic-release-vsce @semantic-release/changelog @semantic-release/git
       - run: npx semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          # GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           # In case you want to publish to Visual Studio Marketplace
           VSCE_PAT: ${{ secrets.VSCE_TOKEN }}
       # - name: Run semantice release
