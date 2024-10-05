@@ -34,7 +34,7 @@ jobs:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           # In case you want to publish to Visual Studio Marketplace
           VSCE_PAT: ${{ secrets.VSCE_TOKEN }}
-      # - name: Run semantice release.
+      # - name: Run semantice release
       #   run: |
       #     npx semantic-release
       #   working-directory: ${{ github.workspace }}
