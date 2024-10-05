@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 20
-      - run: npm install --save-dev semantic-release semantic-release-vsce semantic-release-changelog
+      - run: npm install --save-dev semantic-release semantic-release-vsce @semantic-release/changelog
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
