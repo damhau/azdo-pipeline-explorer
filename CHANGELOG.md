@@ -1,3 +1,10 @@
+## [0.10.6](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.10.5...v0.10.6) (2024-10-05)
+
+
+### Bug Fixes
+
+* add filter to pipeline definition list ([04920a1](https://github.com/damhau/azdo-pipeline-explorer/commit/04920a192c8d01d7da010845bb0e12c6d273b522))
+
 ## [0.10.5](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.10.4...v0.10.5) (2024-10-05)
 
 
