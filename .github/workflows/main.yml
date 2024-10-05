@@ -19,7 +19,6 @@ jobs:
       - run: npx semantic-release
         env:
           VSCE_PAT: ${{ secrets.VSCE_TOKEN }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       # - name: Run semantice release
       #   run: |
