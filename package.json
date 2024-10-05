@@ -148,7 +148,7 @@
         },
         {
           "command": "azurePipelinesExplorer.stopPipeline",
-          "when": "view == pipelineExplorer && viewItem == pipeline",
+          "when": "view == pipelineExplorer && viewItem == runningPipeline",
           "group": "inline@1"
         },
         {

@@ -60,6 +60,8 @@ class PipelineItem extends vscode.TreeItem {
     private getContextValue(result?: string, status?: string, type?: string, approvalId?: any) {
         if (status === "pending" && approvalId !== undefined) {
             return "approval";
+        } else if (status === "inProgress") {
+            return "runningPipeline";
         }else{
             return type;
         }
