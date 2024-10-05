@@ -1,3 +1,10 @@
+# [0.11.0](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.10.6...v0.11.0) (2024-10-05)
+
+
+### Features
+
+* add stop button for pipeline ([f305090](https://github.com/damhau/azdo-pipeline-explorer/commit/f305090031f300ac7b70246264eb18a8d4e0361c))
+
 ## [0.10.6](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.10.5...v0.10.6) (2024-10-05)
 
 
