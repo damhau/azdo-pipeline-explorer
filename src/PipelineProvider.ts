@@ -238,7 +238,7 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
                     task.log ? {
                         command: 'azurePipelinesExplorer.showLogDetails',
                         title: 'Show Log Detail',
-                        arguments: [pat!, task.log.url]
+                        arguments: [pat!, task.log.url, task.id]
                     } : undefined
                 );
             });

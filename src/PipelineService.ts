@@ -2,6 +2,8 @@ import axios, { AxiosError } from 'axios';
 import axiosRetry from 'axios-retry';
 import * as vscode from 'vscode';
 import { parse, stringify } from 'yaml';
+import AnsiToHtml from 'ansi-to-html';
+
 // import YAML from 'yaml';
 
 axiosRetry(axios, {
@@ -557,6 +559,56 @@ export class PipelineService {
 		outputChannel.show();
 
 	}
+
+    async showLogDetailsInWebview(azureDevOpsPAT: string, logURL: string, taskId: string) {
+        // Fetch the log details
+        const logDetails = await this.getPipelineLogsDetails(azureDevOpsPAT, logURL);
+
+        // Create a new Webview panel
+        const panel = vscode.window.createWebviewPanel(
+            'pipelineLogs',
+            `Task ${taskId} Logs`,
+            vscode.ViewColumn.One,
+            {
+                enableScripts: true
+            }
+        );
+
+        // Convert ANSI log output to HTML with color support
+
+        const ansiConverter = new AnsiToHtml();
+        const formattedLogs = logDetails.value.map((line: string) => ansiConverter.toHtml(line)).join('<br>');
+
+        // Set the content of the Webview
+        panel.webview.html = this.getWebviewContent(formattedLogs);
+
+
+
+    }
+
+    private getWebviewContent(logContent: string): string {
+        return `<!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Pipeline Logs</title>
+                <style>
+                    body {
+                        font-family: var(--vscode-editor-font-family);
+                        white-space: pre-wrap;
+                        background-color: #ffffff;
+                        color: #000000;
+                        padding: 10px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div>${logContent}</div>
+            </body>
+            </html>`;
+    }
+
 
     private async handleError(error: unknown) {
         if (axios.isAxiosError(error)) {

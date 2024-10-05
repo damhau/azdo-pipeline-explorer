@@ -55,8 +55,11 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('azurePipelinesExplorer.refreshPipelineDefinition', () => pipelineDefinitionProvider.refresh()),
         vscode.commands.registerCommand('azurePipelinesExplorer.configure', () => configurationService.updateConfiguration()),
         vscode.commands.registerCommand('azurePipelinesExplorer.updatePat', () => configurationService.updatePat()),
-        vscode.commands.registerCommand('azurePipelinesExplorer.showLogDetails', async (azureDevOpsPAT: string, logURL: string) => {
-            await pipelineService.showLogDetails(azureDevOpsPAT, logURL);
+        // vscode.commands.registerCommand('azurePipelinesExplorer.showLogDetails', async (azureDevOpsPAT: string, logURL: string) => {
+        //     await pipelineService.showLogDetails(azureDevOpsPAT, logURL);
+        // }),
+        vscode.commands.registerCommand('azurePipelinesExplorer.showLogDetails', async (azureDevOpsPAT: string, logURL: string, taskId: string) => {
+            await pipelineService.showLogDetailsInWebview(azureDevOpsPAT, logURL, taskId);
         }),
         vscode.commands.registerCommand('azurePipelinesExplorer.startAutoRefresh', () => {
             vscode.window.showInformationMessage('Auto refresh started');
