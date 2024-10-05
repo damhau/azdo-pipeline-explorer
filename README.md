@@ -70,7 +70,7 @@ When the extension runs for the first time, it will prompt you to enter your Azu
 
 ### Open the Extension view
 
-- Click on the extension icon
+- Click on the extension icon.
 
    ![alt text](images/image3.png)
 
