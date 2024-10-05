@@ -97,6 +97,11 @@
         "icon": "$(debug-start)"
       },
       {
+        "command": "azurePipelinesExplorer.stopPipeline",
+        "title": "Pipeline Explorer: Stop a pipeline",
+        "icon": "$(debug-stop)"
+      },
+      {
         "command": "azurePipelinesExplorer.approvePipeline",
         "title": "Approve Pipeline",
         "icon": "$(check)"
@@ -139,6 +144,11 @@
         {
           "command": "azurePipelinesExplorer.startPipeline",
           "when": "view == pipelineDefinitionExplorer && viewItem == pipelineDefinitionItem",
+          "group": "inline@1"
+        },
+        {
+          "command": "azurePipelinesExplorer.stopPipeline",
+          "when": "view == pipelineExplorer && viewItem == pipeline",
           "group": "inline@1"
         },
         {

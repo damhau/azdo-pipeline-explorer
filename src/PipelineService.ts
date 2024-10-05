@@ -434,6 +434,41 @@ export class PipelineService {
 
     }
 
+    async stopPipeline(personalAccessToken: string, pipelineId: string, project: string) {
+        const url = `${this.azureDevOpsOrgUrl}/${project}/_apis/build/builds/${pipelineId}?api-version=${this.azureDevOpsApiVersion}`;
+        try {
+            await axios.patch(
+                url,
+                { status: 'cancelling' },
+                {
+                    headers: {
+                        'User-Agent': this.userAgent,
+                        'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`,
+                    }
+                }
+            );
+
+            vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: `Stopping Pipeline`,
+                    cancellable: false,
+                },
+                async (progress, token) => {
+                    for (let i = 0; i < 2; i++) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        setTimeout(() => {
+                            progress.report({ increment: i * 10, message: '' });
+                        }, 10000);
+                    }
+                }
+            );
+
+        } catch (error: unknown) {
+            return this.handleError(error);
+        }
+    }
+
     async rejectPipeline(personalAccessToken: string, approvalIdId: string, azureSelectedDevOpsProject: string) {
         const pipelineApproval = await this.getPipelineApproval(personalAccessToken, azureSelectedDevOpsProject, approvalIdId);
 
@@ -621,12 +656,16 @@ export class PipelineService {
                     const errorMessage = axiosError.response?.data && typeof axiosError.response.data === 'object' && 'message' in axiosError.response.data
                         ? axiosError.response.data.message
                         : 'An unknown error occurred';
+                    console.debug("error");
+                    console.debug(error);
                     await vscode.window.showErrorMessage(`Error: ${errorMessage}`);
                 }
                 await vscode.window.showErrorMessage(`Error: ${axiosError.message}`);
             }
 
         } else {
+            console.debug("error");
+            console.debug(error);
             await vscode.window.showErrorMessage(`An unknown error occurred: ${error}`);
         }
         return [];

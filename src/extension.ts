@@ -85,9 +85,15 @@ export async function activate(context: vscode.ExtensionContext) {
             await pipelineDefinitionProvider.refresh();
         }),
         vscode.commands.registerCommand('azurePipelinesExplorer.startPipeline', async (pipelineDefinition) => {
-                const pat = await secretManager.getSecret('PAT');
-                await pipelineService.startPipeline(pat!, pipelineDefinition.pipelineId, configurationService.getSelectedProjectFromGlobalState()!);
-                pipelineProvider.refresh();
+            const pat = await secretManager.getSecret('PAT');
+            await pipelineService.startPipeline(pat!, pipelineDefinition.pipelineId, configurationService.getSelectedProjectFromGlobalState()!);
+            pipelineProvider.refresh();
+
+        }),
+        vscode.commands.registerCommand('azurePipelinesExplorer.stopPipeline', async (pipelineDefinition) => {
+            const pat = await secretManager.getSecret('PAT');
+            await pipelineService.stopPipeline(pat!, pipelineDefinition.element_id, configurationService.getSelectedProjectFromGlobalState()!);
+            pipelineProvider.refresh();
 
         }),
 		vscode.commands.registerCommand('azurePipelinesExplorer.approvePipeline', async (pipeline) => {
