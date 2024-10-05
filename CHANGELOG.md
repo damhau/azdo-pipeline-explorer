@@ -1,3 +1,11 @@
+## [0.10.5](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.10.4...v0.10.5) (2024-10-05)
+
+
+### Bug Fixes
+
+* add new changelog in semver release ([bc1d036](https://github.com/damhau/azdo-pipeline-explorer/commit/bc1d036c16cc1f6b37d643eec1cdf6c097e13e48))
+* deploy new version for change log ([133f56e](https://github.com/damhau/azdo-pipeline-explorer/commit/133f56e912385ea163b2ca51e8f1cae127f45ab8))
+
 ## 0.10.3
 
 - test automatic semver release
@@ -48,4 +56,3 @@
 ## 0.0.1
 
 - Initial release
-
