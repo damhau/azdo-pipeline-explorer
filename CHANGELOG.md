@@ -1,3 +1,10 @@
+## [0.11.1](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.11.0...v0.11.1) (2024-10-05)
+
+
+### Bug Fixes
+
+* show stop button only when pipeline is running ([ae07c5b](https://github.com/damhau/azdo-pipeline-explorer/commit/ae07c5b90ba9558ae3eb4762d1f9c21c17059ef9))
+
 # [0.11.0](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.10.6...v0.11.0) (2024-10-05)
 
 
