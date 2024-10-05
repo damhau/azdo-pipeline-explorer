@@ -46,8 +46,8 @@ export class PipelineService {
     }
 
     async getPipelineDefinitions(personalAccessToken: string, maxItems: number, azureSelectedDevOpsProject: string): Promise<any[]> {
-        const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/build/definitions?api-version=${this.azureDevOpsApiVersion}`;
 
+        const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/build/definitions?api-version=${this.azureDevOpsApiVersion}`;
         try {
             const response = await axios.get(url, {
                 headers: {
@@ -386,9 +386,7 @@ export class PipelineService {
             }
         }
         const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/pipelines/approvals?api-version=7.1-preview`;
-        console.debug(`Approving pipeline ${approvalIdId}`);
-        console.debug(`url ${url}`);
-        console.debug(`personalAccessToken ${personalAccessToken}`);
+
         try {
 
             const response = await axios.patch(
@@ -448,9 +446,7 @@ export class PipelineService {
         }
 
         const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/pipelines/approvals?api-version=7.1-preview`;
-        console.debug(`Approving pipeline ${approvalIdId}`);
-        console.debug(`url ${url}`);
-        console.debug(`personalAccessToken ${personalAccessToken}`);
+
         try {
 
             const response = await axios.patch(
@@ -569,7 +565,6 @@ export class PipelineService {
 
                 await vscode.window.showErrorMessage('Authentication failed: Invalid or expired Personal Access Token (PAT). Please update your PAT.');
             } else {
-                console.debug(error);
                 if (axiosError.response && axiosError.response.data) {
                     const errorMessage = axiosError.response?.data && typeof axiosError.response.data === 'object' && 'message' in axiosError.response.data
                         ? axiosError.response.data.message
@@ -580,7 +575,6 @@ export class PipelineService {
             }
 
         } else {
-            console.debug(error);
             await vscode.window.showErrorMessage(`An unknown error occurred: ${error}`);
         }
         return [];

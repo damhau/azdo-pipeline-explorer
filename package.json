@@ -34,7 +34,7 @@
           "when": "true"
         },
         {
-          "id": "pipelineExplorerFolder",
+          "id": "pipelineDefinitionExplorer",
           "name": "Azure DevOps Pipelines"
         },
         {
@@ -87,6 +87,11 @@
         "icon": "$(filter)"
       },
       {
+        "command": "azurePipelinesExplorer.selectPipelineDefinitionsToShow",
+        "title": "Pipeline Explorer: Select Definition to Show",
+        "icon": "$(filter)"
+      },
+      {
         "command": "azurePipelinesExplorer.startPipeline",
         "title": "Pipeline Explorer: Start a pipeline",
         "icon": "$(debug-start)"
@@ -111,7 +116,7 @@
         },
         {
           "command": "azurePipelinesExplorer.refreshPipelineDefinition",
-          "when": "view == pipelineExplorerFolder",
+          "when": "view == pipelineDefinitionExplorer",
           "group": "navigation"
         },
         {
@@ -123,12 +128,17 @@
           "command": "azurePipelinesExplorer.selectProjectsToShow",
           "when": "view == projectExplorer",
           "group": "navigation"
+        },
+        {
+          "command": "azurePipelinesExplorer.selectPipelineDefinitionsToShow",
+          "when": "view == pipelineDefinitionExplorer",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
         {
           "command": "azurePipelinesExplorer.startPipeline",
-          "when": "view == pipelineExplorerFolder && viewItem == pipelineDefinitionItem",
+          "when": "view == pipelineDefinitionExplorer && viewItem == pipelineDefinitionItem",
           "group": "inline@1"
         },
         {

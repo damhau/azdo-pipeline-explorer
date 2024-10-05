@@ -39,7 +39,7 @@ export async function activate(context: vscode.ExtensionContext) {
         showCollapseAll: true
     });
 
-    vscode.window.createTreeView('pipelineExplorerFolder', {
+    vscode.window.createTreeView('pipelineDefinitionExplorer', {
         treeDataProvider: pipelineDefinitionProvider,
         showCollapseAll: true,
     });
@@ -68,6 +68,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }),
         vscode.commands.registerCommand('azurePipelinesExplorer.selectProject', async (projectId: string) => {
             await configurationService.updateSelectedProjectInGlobalState(projectId);
+            await configurationService.clearFilteredPipelineDefinitionsState();
             await pipelineDefinitionProvider.refresh();
             pipelineProvider.refresh();
         }),
@@ -76,6 +77,10 @@ export async function activate(context: vscode.ExtensionContext) {
             await pipelineDefinitionProvider.refresh();
             await pipelineProvider.refresh();
         }),
+        vscode.commands.registerCommand('azurePipelinesExplorer.selectPipelineDefinitionsToShow', async () => {
+            await pipelineDefinitionProvider.promptForFolderSelection();
+            await pipelineDefinitionProvider.refresh();
+        }),
         vscode.commands.registerCommand('azurePipelinesExplorer.startPipeline', async (pipelineDefinition) => {
                 const pat = await secretManager.getSecret('PAT');
                 await pipelineService.startPipeline(pat!, pipelineDefinition.pipelineId, configurationService.getSelectedProjectFromGlobalState()!);
@@ -83,14 +88,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
         }),
 		vscode.commands.registerCommand('azurePipelinesExplorer.approvePipeline', async (pipeline) => {
-            console.debug(`Approving pipeline ${pipeline.approvalId}`);
-            console.debug(`Approving pipeline ${pipeline.id}`);
             const pat = await secretManager.getSecret('PAT');
             await pipelineService.approvePipeline(pat!, pipeline.approvalId, configurationService.getSelectedProjectFromGlobalState()!);
 		}),
 		vscode.commands.registerCommand('azurePipelinesExplorer.rejectPipeline', async (pipeline) => {
-            console.debug(`Approving pipeline ${pipeline.approvalId}`);
-            console.debug(`Approving pipeline ${pipeline.id}`);
             const pat = await secretManager.getSecret('PAT');
             await pipelineService.rejectPipeline(pat!, pipeline.approvalId, configurationService.getSelectedProjectFromGlobalState()!);
 

@@ -165,7 +165,6 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
                 pendingApprovalId = undefined;
             }
 
-            console.debug('hasPendingApprovals', pendingApprovalId);
             return stages.map((stage: any) => {
                 return new PipelineItem(
                     stage.id,
@@ -271,6 +270,9 @@ class PipelineDefinitionProvider implements vscode.TreeDataProvider<vscode.TreeI
     private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined | null | void> = new vscode.EventEmitter<vscode.TreeItem | undefined | null | void>();
     readonly onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
+
+    // private allowedFolders: string[] = [];
+
     constructor(
         private secretManager: SecretManager,
         private pipelineService: PipelineService,
@@ -285,11 +287,36 @@ class PipelineDefinitionProvider implements vscode.TreeDataProvider<vscode.TreeI
         return element;
     }
 
+    async promptForFolderSelection(): Promise<void> {
+        const pat = await this.secretManager.getSecret('PAT');
+        const azureDevOpsSelectedProject = this.configurationService.getSelectedProjectFromGlobalState();
+
+        if (!azureDevOpsSelectedProject) {
+            vscode.window.showErrorMessage('No project selected.');
+            return;
+        }
+
+        const pipelines = await this.pipelineService.getPipelineDefinitions(pat!, 1000, azureDevOpsSelectedProject!);
+        const folderNames = [...new Set(pipelines.map(pipeline => pipeline.path || 'Uncategorized'))].sort();
+
+        const selectedFolders = await vscode.window.showQuickPick(folderNames, {
+            canPickMany: true,
+            placeHolder: 'Select folders to show'
+        });
+
+        if (selectedFolders) {
+            await this.configurationService.updateFilteredPipelineDefinitionsInGlobalState(selectedFolders);
+
+            // Refresh tree view
+            this.refresh();
+        }
+    }
+
     async getChildren(element?: vscode.TreeItem): Promise<vscode.TreeItem[]> {
         const pat = await this.secretManager.getSecret('PAT');
         const { azureDevOpsPipelineMaxItems } = this.configurationService.getConfiguration();
 
-
+        const allowedFolders = this.configurationService.getFilteredPipelineDefinitionsFromGlobalState() || [];
         // Retrieve the selected project from global state
         const azureDevOpsSelectedProject = this.configurationService.getSelectedProjectFromGlobalState();
 
@@ -322,10 +349,23 @@ class PipelineDefinitionProvider implements vscode.TreeDataProvider<vscode.TreeI
             });
 
             // Sort folders alphabetically
-            const sortedFolderNames = Object.keys(folders).sort((a, b) => a.localeCompare(b));
+            let sortedFolderNames: string[]
+            sortedFolderNames = Object.keys(folders).sort((a, b) => a.localeCompare(b));
+
+
+            let filteredFolders: string[] = [];
+            if(allowedFolders.length === 0){
+                filteredFolders = sortedFolderNames;
+
+            }else{
+                filteredFolders = sortedFolderNames.filter((folder: any) =>
+                    allowedFolders.includes(folder)
+                );
+
+            }
 
             // Create folder items based on sorted folder names
-            return sortedFolderNames.map(folderName => {
+            return filteredFolders.map(folderName => {
                 return new FolderItem(
                     folderName,
                     vscode.TreeItemCollapsibleState.Collapsed
@@ -345,17 +385,11 @@ class PipelineDefinitionProvider implements vscode.TreeDataProvider<vscode.TreeI
                     vscode.TreeItemCollapsibleState.None,
                     pipeline._links.web.href,
                     folderName
-                    // {
-                    //     command: 'azurePipelinesExplorer.startPipeline',
-                    //     title: 'Start Pipeline',
-                    //     arguments: [pat!, pipeline.id, azureDevOpsSelectedProject]
-                    // }
                 );
             });
         }
         return [];
     }
 }
-
 
 export { PipelineItem, PipelineProvider, PipelineDefinitionProvider };

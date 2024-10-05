@@ -49,6 +49,7 @@ export class ConfigurationService {
                 await this.secretManager!.storeSecret('PAT', inputPat);
                 await this.clearSelectedProjectState();
                 await this.clearFilteredProjectsState();
+                await this.clearFilteredPipelineDefinitionsState();
                 vscode.window.showInformationMessage('Configuration saved successfully.');
                 vscode.commands.executeCommand('workbench.action.reloadWindow');
             } else {
@@ -84,6 +85,7 @@ export class ConfigurationService {
             await this.secretManager!.storeSecret('PAT', inputPat);
             await this.clearSelectedProjectState();
             await this.clearFilteredProjectsState();
+            await this.clearFilteredPipelineDefinitionsState();
             vscode.window.showInformationMessage('Configuration saved successfully.');
             vscode.commands.executeCommand('workbench.action.reloadWindow');
         } else {
@@ -120,7 +122,7 @@ export class ConfigurationService {
     async clearSelectedProjectState(): Promise<void> {
         await this.context?.globalState.update('azureDevOpsSelectedProject', undefined);
     }
-
+    // Project Filter
     async updateFilteredprojectInGlobalState(projectIds: string[]) {
         await this.context?.globalState.update('azureDevOpsFilteredProjects', projectIds);
     }
@@ -131,6 +133,19 @@ export class ConfigurationService {
 
     async clearFilteredProjectsState(): Promise<void> {
         await this.context?.globalState.update('azureDevOpsFilteredProjects', undefined);
+    }
+
+    // Pipeline Definition Filter
+    async updateFilteredPipelineDefinitionsInGlobalState(PipelineDefinitionIds: string[]) {
+        await this.context?.globalState.update('azureDevOpsFilteredPipelineDefinitions', PipelineDefinitionIds);
+    }
+
+    getFilteredPipelineDefinitionsFromGlobalState(): string[] | undefined {
+        return this.context?.globalState.get<string[]>('azureDevOpsFilteredPipelineDefinitions');
+    }
+
+    async clearFilteredPipelineDefinitionsState(): Promise<void> {
+        await this.context?.globalState.update('azureDevOpsFilteredPipelineDefinitions', undefined);
     }
 
 }
