@@ -1,3 +1,10 @@
+## [0.10.3](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.10.2...v0.10.3) (2024-10-05)
+
+
+### Bug Fixes
+
+* add change log ([73c6655](https://github.com/damhau/azdo-pipeline-explorer/commit/73c6655bf4ee6fc762bb7fd0378f5e28bbdf4be1))
+
 # Change Log
 
 All notable changes to the "azdo-pipeline" extension will be documented in this file.
@@ -55,4 +62,3 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - add view for pipeline definitions
 - add button and command to start pipeline
 - add button to approve or reject a pipeline that is pending on an approval
-
