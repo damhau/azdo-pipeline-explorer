@@ -12,32 +12,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm install
-
-      - name: Run semantice release
-        run: |
-          npx semantic-release
-        working-directory: ${{ github.workspace }}
-
-      - name: Print package.json version (before)
-        run: |
-          echo "package.json version (before): $(jq -r .version package.json)"
-        working-directory: ${{ github.workspace }}
-
-      - name: Fetch Latest Commit
-        run: |
-          git fetch
-          git reset --hard origin/main
-      - name: Print package.json version (after)
-        run: |
-          echo "package.json version (after): $(jq -r .version package.json)"
-        working-directory: ${{ github.workspace }}
-
-      - uses: lannonbr/vsce-action@4.0.0
+      - uses: actions/setup-node@v3
         with:
-          args: "publish -p $VSCE_TOKEN"
+          node-version: 20
+      - run: npm install --save-dev semantic-release semantic-release-vsce
+      - run: npx semantic-release
         env:
-          VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
+          VSCE_PAT: ${{ secrets.VSCE_TOKEN }}
+
+      # - name: Run semantice release
+      #   run: |
+      #     npx semantic-release
+      #   working-directory: ${{ github.workspace }}
+
+      # - name: Print package.json version (before)
+      #   run: |
+      #     echo "package.json version (before): $(jq -r .version package.json)"
+      #   working-directory: ${{ github.workspace }}
+
+      # - name: Fetch Latest Commit
+      #   run: |
+      #     git fetch
+      #     git reset --hard origin/main
+      # - name: Print package.json version (after)
+      #   run: |
+      #     echo "package.json version (after): $(jq -r .version package.json)"
+      #   working-directory: ${{ github.workspace }}
+
+      # - uses: lannonbr/vsce-action@4.0.0
+      #   with:
+      #     args: "publish -p $VSCE_TOKEN"
+      #   env:
+      #     VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
 # # on:
 # #   push:
 # #     # Pattern matched against refs/tags
