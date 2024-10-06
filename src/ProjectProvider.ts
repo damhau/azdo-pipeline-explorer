@@ -12,6 +12,7 @@ class ProjectItem extends vscode.TreeItem {
 	) {
 		super(label, collapsibleState);
 		this.iconPath = new vscode.ThemeIcon('repo');
+		this.contextValue = 'project';
 	}
 }
 

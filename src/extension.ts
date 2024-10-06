@@ -84,9 +84,9 @@ export async function activate(context: vscode.ExtensionContext) {
             await pipelineDefinitionProvider.promptForFolderSelection();
             await pipelineDefinitionProvider.refresh();
         }),
-        vscode.commands.registerCommand('azurePipelinesExplorer.startPipeline', async (pipelineDefinition) => {
+        vscode.commands.registerCommand('azurePipelinesExplorer.startPipeline', async (pipeline) => {
             const pat = await secretManager.getSecret('PAT');
-            await pipelineService.startPipeline(pat!, pipelineDefinition.pipelineId, configurationService.getSelectedProjectFromGlobalState()!);
+            await pipelineService.startPipeline(pat!, pipeline.pipelineId, configurationService.getSelectedProjectFromGlobalState()!);
             pipelineProvider.refresh();
 
         }),
@@ -104,6 +104,18 @@ export async function activate(context: vscode.ExtensionContext) {
             const pat = await secretManager.getSecret('PAT');
             await pipelineService.rejectPipeline(pat!, pipeline.approvalId, configurationService.getSelectedProjectFromGlobalState()!);
 
+		}),
+        vscode.commands.registerCommand('azurePipelinesExplorer.openProjectInBrowser', () => {
+			const prUrl = `${azureDevOpsOrgUrl}/${configurationService.getSelectedProjectFromGlobalState()!}`;
+			vscode.env.openExternal(vscode.Uri.parse(prUrl));
+		}),
+        vscode.commands.registerCommand('azurePipelinesExplorer.openPipelineDefinitionInBrowser', (pipelineDefinition) => {
+            const prUrl = `${azureDevOpsOrgUrl}/${configurationService.getSelectedProjectFromGlobalState()!}/_build?definitionId=${pipelineDefinition.pipelineId}`;
+			vscode.env.openExternal(vscode.Uri.parse(prUrl));
+		}),
+        vscode.commands.registerCommand('azurePipelinesExplorer.openPipelineInBrowser', (pipeline) => {
+            const prUrl = `${azureDevOpsOrgUrl}/${configurationService.getSelectedProjectFromGlobalState()!}/_build/results?buildId=${pipeline.element_id}&view=results`;
+			vscode.env.openExternal(vscode.Uri.parse(prUrl));
 		}),
     );
 
