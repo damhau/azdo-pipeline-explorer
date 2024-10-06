@@ -26,11 +26,12 @@
 
 ## Introduction
 
-This Visual Studio Code extension connects to Azure DevOps and allows you to select a project and view the status of the last pipelines and their logs. It also provides auto-refresh functionality and pipeline log details in an output channel.
+This Visual Studio Code extension connects to Azure DevOps and allows you to select a project and a pipeline definition to view the status of the last pipelines runs and their logs. You can also start and stop a pipeline and approve/reject an pending pipeline.
+
 
 ## Features
 
-- View the project in Azure DEvops with a optional filter.
+- View the project in Azure Devops with a optional filter.
 - View the pipeline definition with their folder structure.
 - Start and approve pipelines.
 - View the last 20 build pipelines in Azure DevOps. 20 is the default settings but it is customizable.
