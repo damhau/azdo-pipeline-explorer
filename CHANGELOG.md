@@ -1,3 +1,10 @@
+## [0.12.1](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.12.0...v0.12.1) (2024-10-06)
+
+
+### Bug Fixes
+
+* Update README.md ([331d958](https://github.com/damhau/azdo-pipeline-explorer/commit/331d958b6501ec51dbeffe7be6f871d0c23275ae))
+
 # [0.12.0](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.11.1...v0.12.0) (2024-10-06)
 
 
