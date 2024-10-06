@@ -1,3 +1,10 @@
+# [0.12.0](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.11.1...v0.12.0) (2024-10-06)
+
+
+### Features
+
+* add open item in browser ([90c9176](https://github.com/damhau/azdo-pipeline-explorer/commit/90c9176428565891783b7274c4e4cf9bdf869ce1))
+
 ## [0.11.1](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.11.0...v0.11.1) (2024-10-05)
 
 
