@@ -1,3 +1,10 @@
+## [0.12.2](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.12.1...v0.12.2) (2024-10-07)
+
+
+### Bug Fixes
+
+* add support for dark them ([b23203c](https://github.com/damhau/azdo-pipeline-explorer/commit/b23203cc02b3b6f9691bee74ea167f5e741ec883))
+
 ## [0.12.1](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.12.0...v0.12.1) (2024-10-06)
 
 
