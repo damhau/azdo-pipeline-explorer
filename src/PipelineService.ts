@@ -8,7 +8,7 @@ import AnsiToHtml from 'ansi-to-html';
 
 axiosRetry(axios, {
     retries: 3, // Number of retries (Defaults to 3)
- });
+});
 
 export class PipelineService {
     private azureDevOpsOrgUrl: string;
@@ -34,13 +34,13 @@ export class PipelineService {
                 }
             });
 
-			if (response.request._redirectable._redirectCount > 0){
-				await vscode.window.showErrorMessage(`An error occurred while fetching pipeline data. There is a redirect in the response, probably a SAML or Openid authentication is configured on the Azure Devops API`);
-			}else{
-				const pipelines = response.data.value.slice(0, maxItems);
-				return pipelines;
+            if (response.request._redirectable._redirectCount > 0) {
+                await vscode.window.showErrorMessage(`An error occurred while fetching pipeline data. There is a redirect in the response, probably a SAML or Openid authentication is configured on the Azure Devops API`);
+            } else {
+                const pipelines = response.data.value.slice(0, maxItems);
+                return pipelines;
 
-			}
+            }
 
         } catch (error: unknown) {
             return this.handleError(error);
@@ -117,7 +117,7 @@ export class PipelineService {
     }
 
     // Fetch the branches for a repository
-    async getRepositoryBranches(personalAccessToken: string, repositoryId: string,  azureSelectedDevOpsProject: string): Promise<string[]> {
+    async getRepositoryBranches(personalAccessToken: string, repositoryId: string, azureSelectedDevOpsProject: string): Promise<string[]> {
         const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/git/repositories/${repositoryId}/refs?filter=heads/&api-version=${this.azureDevOpsApiVersion}`;
 
         try {
@@ -146,7 +146,7 @@ export class PipelineService {
     }
 
     async promptForComponentSelection(values: string[]): Promise<string | undefined> {
-        const selectedComponent= await vscode.window.showQuickPick(values, {
+        const selectedComponent = await vscode.window.showQuickPick(values, {
             placeHolder: 'Select the branch to run the pipeline on'
         });
 
@@ -161,8 +161,8 @@ export class PipelineService {
         return selectedEnvironment;
     }
 
-    async getFileContents(personalAccessToken: string, azureSelectedDevOpsProject: string, repository: string, path: string){
-        const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/git/repositories/${repository}/items/${path.replace("/","%2F").replace("/","%2F").replace("/","%2F").replace("/","%2F")}`;
+    async getFileContents(personalAccessToken: string, azureSelectedDevOpsProject: string, repository: string, path: string) {
+        const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/git/repositories/${repository}/items/${path.replace("/", "%2F").replace("/", "%2F").replace("/", "%2F").replace("/", "%2F")}`;
 
         try {
             const response = await axios.get(url, {
@@ -186,12 +186,12 @@ export class PipelineService {
 
         if (!pipelineParameters) {
             return [];
-        }else{
+        } else {
             if (pipelineParameters[0].name === "component") {
 
                 return pipelineParameters[0].values;
 
-            }else{
+            } else {
                 return [];
 
             }
@@ -208,12 +208,12 @@ export class PipelineService {
 
         if (!pipelineParameters) {
             return [];
-        }else{
+        } else {
             if (pipelineParameters[1].name === "environment") {
 
                 return pipelineParameters[1].values;
 
-            }else{
+            } else {
                 return [];
 
             }
@@ -246,7 +246,7 @@ export class PipelineService {
             const hasPendingApprovals = pipelineApprovals.some((approval: any) => approval.status === 'pending');
             if (hasPendingApprovals) {
                 return approvals;
-            }else{
+            } else {
                 return [];
             }
         } catch (error: unknown) {
@@ -308,10 +308,10 @@ export class PipelineService {
                 templateParameters: {
                     component: selectedComponent,
                     environment: selectedEnvironment
-                  }
+                }
             };
 
-        }else{
+        } else {
             body = {
                 definition: {
                     id: pipelineId
@@ -376,7 +376,7 @@ export class PipelineService {
             if (confirm !== 'Yes') {
                 return;
             }
-        }else{
+        } else {
             const confirm = await vscode.window.showWarningMessage(
                 `${pipelineApproval.instructions}?`,
                 { modal: true },
@@ -400,7 +400,7 @@ export class PipelineService {
                         "status": "approved"
                     }
                 ]
-                  ,
+                ,
                 {
                     headers: {
                         'User-Agent': this.userAgent,
@@ -495,7 +495,7 @@ export class PipelineService {
                         "status": "rejected"
                     }
                 ]
-                  ,
+                ,
                 {
                     headers: {
                         'User-Agent': this.userAgent,
@@ -559,18 +559,18 @@ export class PipelineService {
         }
     }
 
-	async showLogDetails(azureDevOpsPAT: string, logURL: string) {
-		const outputChannel = vscode.window.createOutputChannel("Azure DevOps Pipelines");
+    async showLogDetails(azureDevOpsPAT: string, logURL: string) {
+        const outputChannel = vscode.window.createOutputChannel("Azure DevOps Pipelines");
 
-		const logDetails = await this.getPipelineLogsDetails(azureDevOpsPAT, logURL);
+        const logDetails = await this.getPipelineLogsDetails(azureDevOpsPAT, logURL);
 
 
-		// Clear the previous output
-		outputChannel.clear();
+        // Clear the previous output
+        outputChannel.clear();
 
-		// Append new log details
-		outputChannel.appendLine(`Log details for Task`);
-		outputChannel.appendLine('---------------------------------------------------------------------------');
+        // Append new log details
+        outputChannel.appendLine(`Log details for Task`);
+        outputChannel.appendLine('---------------------------------------------------------------------------');
 
 
         for (let line of logDetails.value) {
@@ -588,12 +588,12 @@ export class PipelineService {
                 }
             }
         }
-		outputChannel.appendLine('---------------------------------------------------------------------------');
+        outputChannel.appendLine('---------------------------------------------------------------------------');
 
-		// Show the output channel
-		outputChannel.show();
+        // Show the output channel
+        outputChannel.show();
 
-	}
+    }
 
     async showLogDetailsInWebview(azureDevOpsPAT: string, logURL: string, taskId: string) {
         // Fetch the log details
@@ -632,8 +632,8 @@ export class PipelineService {
                     body {
                         font-family: var(--vscode-editor-font-family);
                         white-space: pre-wrap;
-                        background-color: #ffffff;
-                        color: #000000;
+                        background-color: var(--vscode-terminal-background, --vscode-editor-background);
+                        color: var(--vscode-terminal-foreground, --vscode-editor-foreground);
                         padding: 10px;
                     }
                 </style>
