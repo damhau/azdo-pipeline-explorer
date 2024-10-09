@@ -599,6 +599,24 @@ export class PipelineService {
         // Fetch the log details
         const logDetails = await this.getPipelineLogsDetails(azureDevOpsPAT, logURL);
 
+        const cleanedLog = [];
+
+        for (let line of logDetails.value) {
+            let textLine = line.slice(29);
+            // Check if the start of a new block matches the timestamp pattern
+            const timestampPattern = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z \[\w+\].*/;
+            const problemsPattern = /The following problems may be the cause of any confusing errors from downstream operations/;
+            const dashPattern = /^\s+-\s.*/;
+
+            if (!timestampPattern.test(textLine)) {
+                if (!problemsPattern.test(textLine)) {
+                    if (!dashPattern.test(textLine)) {
+                        cleanedLog.push(`${textLine}`);
+                    }
+                }
+            }
+        }
+
         // Create a new Webview panel
         const panel = vscode.window.createWebviewPanel(
             'pipelineLogs',
@@ -612,7 +630,7 @@ export class PipelineService {
         // Convert ANSI log output to HTML with color support
 
         const ansiConverter = new AnsiToHtml();
-        const formattedLogs = logDetails.value.map((line: string) => ansiConverter.toHtml(line)).join('<br>');
+        const formattedLogs = cleanedLog.map((line: string) => ansiConverter.toHtml(line)).join('<br>');
 
         // Set the content of the Webview
         panel.webview.html = this.getWebviewContent(formattedLogs);
