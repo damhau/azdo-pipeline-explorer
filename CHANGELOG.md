@@ -1,3 +1,10 @@
+## [0.12.3](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.12.2...v0.12.3) (2024-10-09)
+
+
+### Bug Fixes
+
+* cleanup log content ([9c41871](https://github.com/damhau/azdo-pipeline-explorer/commit/9c41871ce218836ff81c0029ebc02c28da9da85e))
+
 ## [0.12.2](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.12.1...v0.12.2) (2024-10-07)
 
 
