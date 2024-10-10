@@ -1,3 +1,10 @@
+## [0.12.4](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.12.3...v0.12.4) (2024-10-10)
+
+
+### Bug Fixes
+
+* add tooltips for pipeline item ([5e85d6d](https://github.com/damhau/azdo-pipeline-explorer/commit/5e85d6dfc7f111eb3e6bf7f1e14f1e8bb0b1cc13))
+
 ## [0.12.3](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.12.2...v0.12.3) (2024-10-09)
 
 
