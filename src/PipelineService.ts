@@ -33,7 +33,7 @@ export class PipelineService {
                     'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
                 }
             });
-
+            console.log(response);
             if (response.request._redirectable._redirectCount > 0) {
                 await vscode.window.showErrorMessage(`An error occurred while fetching pipeline data. There is a redirect in the response, probably a SAML or Openid authentication is configured on the Azure Devops API`);
             } else {

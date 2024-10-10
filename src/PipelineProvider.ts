@@ -27,11 +27,22 @@ class PipelineItem extends vscode.TreeItem {
         public readonly logUrl?: string,
         public readonly command?: vscode.Command,
         public readonly approvalId?: string,
+        public readonly details?: {
+            sourceBranch?: string;
+            sourceVersion?: string;
+            startTime?: string;
+            requestedBy?: string;
+            repository?: string;
+        }
 
     ) {
         super(label, collapsibleState);
         this.iconPath = this.getIconForResult(result, status, type);
         this.contextValue = this.getContextValue(result, status, type, approvalId);
+        if (type === "pipeline") {
+            this.tooltip = `Requested by: ${this.details?.["requestedBy"]}\nRepository: ${this.details?.["repository"]}\nSource Branch: ${this.details?.["sourceBranch"]}\nCommit: ${this.details?.["sourceVersion"]}\nstart Time: ${this.details?.["startTime"]}`;
+        }
+
     }
 
     private getIconForResult(result?: string, status?: string, type?: string): vscode.ThemeIcon {
@@ -144,6 +155,7 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
                 this.startAutoRefresh();
             }
 
+
             return pipelines.map((pipeline: any) => {
                 return new PipelineItem(
                     pipeline.id, // element_id
@@ -152,9 +164,23 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
                     "pipeline", // type
                     pipeline._links.timeline.href, // url
                     pipeline.result, // result
-                    pipeline.status // status
+                    pipeline.status, // status
+                    undefined, // logUrl
+                    undefined, // command
+                    undefined, // approvalId
+                    {
+                        "sourceBranch": pipeline.sourceBranch,
+                        "sourceVersion": pipeline.sourceVersion,
+                        "startTime": pipeline.startTime,
+                        "requestedBy": pipeline.requestedBy.displayName,
+                        "repository": pipeline.repository.name
+                    }
+
                 );
             });
+
+
+
         }
         else if (element.type === "pipeline") {
             const logsData = await this.pipelineService.getPipelineLogs(pat!, element.pipelineUrl!);
@@ -351,7 +377,7 @@ class PipelineDefinitionProvider implements vscode.TreeDataProvider<vscode.TreeI
             });
 
             // Sort folders alphabetically
-            let sortedFolderNames: string[]
+            let sortedFolderNames: string[];
             sortedFolderNames = Object.keys(folders).sort((a, b) => a.localeCompare(b));
 
 
