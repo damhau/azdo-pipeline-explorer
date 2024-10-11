@@ -405,8 +405,11 @@ class PipelineDefinitionProvider implements vscode.TreeDataProvider<vscode.TreeI
             const folderName = element.folderName;
             const pipelines = await this.pipelineService.getPipelineDefinitionsByFolder(pat!, folderName, azureDevOpsSelectedProject!);
 
+            // Sort pipelines alphabetically by name
+            const sortedPipelines = pipelines.sort((a, b) => a.name.localeCompare(b.name));
+
             // Return pipelines within the folder
-            return pipelines.map(pipeline => {
+            return sortedPipelines.map(pipeline => {
                 return new PipelineDefinitionItem(
                     pipeline.id,
                     pipeline.name,

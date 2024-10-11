@@ -146,14 +146,18 @@ export class PipelineService {
     }
 
     async promptForComponentSelection(values: string[]): Promise<string | undefined> {
-        const selectedComponent = await vscode.window.showQuickPick(values, {
-            placeHolder: 'Select the branch to run the pipeline on'
+        // Sort values alphabetically
+        const sortedValues = values.sort((a, b) => a.localeCompare(b));
+
+        const selectedComponent = await vscode.window.showQuickPick(sortedValues, {
+            placeHolder: 'Select the component to run the pipeline on'
         });
 
         return selectedComponent;
     }
 
     async promptForEnvironmentSelection(values: string[]): Promise<string | undefined> {
+        // Sort values alphabetically
         const selectedEnvironment = await vscode.window.showQuickPick(values, {
             placeHolder: 'Select the environment of the pipeline to run'
         });
@@ -575,15 +579,21 @@ export class PipelineService {
         }
     }
 
-    async fetchFileContent(personalAccessToken: string, fileUrl: string): Promise<any> {
-        const response = await axios.get(fileUrl, {
-            headers: {
-                'User-Agent': this.userAgent,
-                'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
-            }
-        });
-        console.debug(response);
-        return response.data || 'No content available';
+    async fetchTerraformPlanContent(personalAccessToken: string, fileUrl: string): Promise<any> {
+        try {
+            const response = await axios.get(fileUrl, {
+                headers: {
+                    'User-Agent': this.userAgent,
+                    'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
+                }
+            });
+            console.debug(response);
+            return response.data || 'No Terraform plan available';
+        } catch (error: unknown) {
+            return 'No Terraform plan available';
+
+        }
+
     }
 
 
@@ -706,10 +716,12 @@ export class PipelineService {
         // Fetch the log details
         console.debug("showTerraformPlanInWebview");
         const terraformPlanUrl = await this.getPipelineTerraformPlanId(azureDevOpsPAT, buildId, azureSelectedDevOpsProject);
+
         console.debug("terraformPlanUrl" + terraformPlanUrl);
         //console.debug(terraformPlanUrl);
         //const result = await this.fetchFileContent(terraformPlanUrl);
-        this.fetchFileContent(azureDevOpsPAT, terraformPlanUrl).then((data) => {
+
+        this.fetchTerraformPlanContent(azureDevOpsPAT, terraformPlanUrl).then((data) => {
             console.debug(data);
             // Create a new Webview panel
             const panel = vscode.window.createWebviewPanel(
