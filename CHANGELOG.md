@@ -1,3 +1,10 @@
+# [0.13.0](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.12.4...v0.13.0) (2024-10-11)
+
+
+### Features
+
+* add button to show Terraform plan if you use the extension Azure Pipelines Terraform Tasks ([cdffe35](https://github.com/damhau/azdo-pipeline-explorer/commit/cdffe3549c523875f5496ea3101b1e58340a014f))
+
 ## [0.12.4](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.12.3...v0.12.4) (2024-10-10)
 
 
