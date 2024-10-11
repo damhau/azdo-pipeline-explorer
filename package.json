@@ -102,6 +102,11 @@
         "icon": "$(debug-stop)"
       },
       {
+        "command": "azurePipelinesExplorer.showTerraformPlan",
+        "title": "Pipeline Explorer: Show Terraform Plan",
+        "icon": "$(output)"
+      },
+      {
         "command": "azurePipelinesExplorer.approvePipeline",
         "title": "Approve Pipeline",
         "icon": "$(check)"
@@ -167,14 +172,24 @@
           "group": "inline@2"
         },
         {
-          "command": "azurePipelinesExplorer.stopPipeline",
+          "command": "azurePipelinesExplorer.showTerraformPlan",
           "when": "view == pipelineExplorer && viewItem == runningPipeline",
           "group": "inline@1"
         },
         {
-          "command": "azurePipelinesExplorer.openPipelineInBrowser",
+          "command": "azurePipelinesExplorer.stopPipeline",
           "when": "view == pipelineExplorer && viewItem == runningPipeline",
           "group": "inline@2"
+        },
+        {
+          "command": "azurePipelinesExplorer.openPipelineInBrowser",
+          "when": "view == pipelineExplorer && viewItem == runningPipeline",
+          "group": "inline@3"
+        },
+        {
+          "command": "azurePipelinesExplorer.showTerraformPlan",
+          "when": "view == pipelineExplorer && viewItem == pipeline",
+          "group": "inline@1"
         },
         {
           "command": "azurePipelinesExplorer.openPipelineInBrowser",

@@ -559,6 +559,34 @@ export class PipelineService {
         }
     }
 
+
+    async getPipelineTerraformPlanId(personalAccessToken: string, buildId: string, azureSelectedDevOpsProject: string): Promise<any> {
+        const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/build/builds/${buildId}/attachments/terraform-plan-results?api-version=${this.azureDevOpsApiVersion}`;
+        try {
+            const response = await axios.get(url, {
+                headers: {
+                    'User-Agent': this.userAgent,
+                    'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
+                }
+            });
+            return response.data.value[0]._links.self.href;
+        } catch (error: unknown) {
+            return this.handleError(error);
+        }
+    }
+
+    async fetchFileContent(personalAccessToken: string, fileUrl: string): Promise<any> {
+        const response = await axios.get(fileUrl, {
+            headers: {
+                'User-Agent': this.userAgent,
+                'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
+            }
+        });
+        console.debug(response);
+        return response.data || 'No content available';
+    }
+
+
     async showLogDetails(azureDevOpsPAT: string, logURL: string) {
         const outputChannel = vscode.window.createOutputChannel("Azure DevOps Pipelines");
 
@@ -602,7 +630,18 @@ export class PipelineService {
         const cleanedLog = [];
 
         for (let line of logDetails.value) {
-            let textLine = line.slice(29);
+            let textLine: any;
+            if (/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(line)) {
+
+                textLine = line.slice(29);
+
+            }else{
+
+                textLine = line;
+
+
+
+            }
             // Check if the start of a new block matches the timestamp pattern
             const timestampPattern = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z \[\w+\].*/;
             const problemsPattern = /The following problems may be the cause of any confusing errors from downstream operations/;
@@ -615,6 +654,7 @@ export class PipelineService {
                     }
                 }
             }
+            // cleanedLog.push(`${line}`);
         }
 
         // Create a new Webview panel
@@ -646,6 +686,60 @@ export class PipelineService {
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Pipeline Logs</title>
+                <style>
+                    body {
+                        font-family: var(--vscode-editor-font-family);
+                        white-space: pre-wrap;
+                        background-color: var(--vscode-terminal-background, --vscode-editor-background);
+                        color: var(--vscode-terminal-foreground, --vscode-editor-foreground);
+                        padding: 10px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div>${logContent}</div>
+            </body>
+            </html>`;
+    }
+
+    async showTerraformPlanInWebview(azureDevOpsPAT: string, buildId: string, azureSelectedDevOpsProject: string){
+        // Fetch the log details
+        console.debug("showTerraformPlanInWebview");
+        const terraformPlanUrl = await this.getPipelineTerraformPlanId(azureDevOpsPAT, buildId, azureSelectedDevOpsProject);
+        console.debug("terraformPlanUrl" + terraformPlanUrl);
+        //console.debug(terraformPlanUrl);
+        //const result = await this.fetchFileContent(terraformPlanUrl);
+        this.fetchFileContent(azureDevOpsPAT, terraformPlanUrl).then((data) => {
+            console.debug(data);
+            // Create a new Webview panel
+            const panel = vscode.window.createWebviewPanel(
+                'pipelineLogs',
+                `Terraform Plan ${buildId}`,
+                vscode.ViewColumn.One,
+                {
+                    enableScripts: true
+                }
+            );
+            const ansiConverter = new AnsiToHtml();
+            const formattedLogs = ansiConverter.toHtml(data);
+
+            // Set the content of the Webview
+            panel.webview.html = this.getTerraformPlanWebviewContent(formattedLogs);
+        });
+        //     // Convert ANSI log output to HTML with color support
+
+
+
+
+    }
+
+    private getTerraformPlanWebviewContent(logContent: string): string {
+        return `<!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Terraform Plan</title>
                 <style>
                     body {
                         font-family: var(--vscode-editor-font-family);

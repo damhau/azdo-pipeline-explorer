@@ -96,6 +96,11 @@ export async function activate(context: vscode.ExtensionContext) {
             pipelineProvider.refresh();
 
         }),
+        vscode.commands.registerCommand('azurePipelinesExplorer.showTerraformPlan', async (pipelineDefinition) => {
+            const pat = await secretManager.getSecret('PAT');
+            await pipelineService.showTerraformPlanInWebview(pat!, pipelineDefinition.element_id, configurationService.getSelectedProjectFromGlobalState()!);
+
+        }),
 		vscode.commands.registerCommand('azurePipelinesExplorer.approvePipeline', async (pipeline) => {
             const pat = await secretManager.getSecret('PAT');
             await pipelineService.approvePipeline(pat!, pipeline.approvalId, configurationService.getSelectedProjectFromGlobalState()!);
