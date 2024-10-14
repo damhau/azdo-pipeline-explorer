@@ -1,3 +1,10 @@
+## [0.14.1](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.14.0...v0.14.1) (2024-10-14)
+
+
+### Bug Fixes
+
+* bug with approvals ([177969e](https://github.com/damhau/azdo-pipeline-explorer/commit/177969edf211b98930918b53398a1789c58ebc08))
+
 # [0.14.0](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.13.1...v0.14.0) (2024-10-14)
 
 
