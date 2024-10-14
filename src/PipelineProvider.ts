@@ -41,7 +41,7 @@ class PipelineItem extends vscode.TreeItem {
         this.iconPath = this.getIconForResult(result, status, type);
         this.contextValue = this.getContextValue(result, status, type, approvalId, details);
         if (type === "pipeline") {
-            this.tooltip = `Requested by: ${this.details?.["requestedBy"]}\nRepository: ${this.details?.["repository"]}\nSource Branch: ${this.details?.["sourceBranch"]}\nCommit: ${this.details?.["sourceVersion"]}\nstart Time: ${this.details?.["startTime"]}\nContext: ${this.contextValue}\terraformPlan: ${this.details?.["terraformPlan"]}`;
+            this.tooltip = `Requested by: ${this.details?.["requestedBy"]}\nRepository: ${this.details?.["repository"]}\nSource Branch: ${this.details?.["sourceBranch"]}\nCommit: ${this.details?.["sourceVersion"]}\nstart Time: ${this.details?.["startTime"]}`;
         }else{
             this.tooltip = `Context: ${this.contextValue}`;
         }

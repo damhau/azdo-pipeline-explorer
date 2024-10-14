@@ -221,15 +221,9 @@ export class PipelineService {
 
             // Filter approvals based on the pipeline ID
             const approvals = response.data.value;
-            const pipelineApprovals = approvals.filter((approval: any) => approval.owner?.id === pipelineId);
+            const pipelineApprovals = approvals.filter((approval: any) => approval.owner?.id === pipelineId && approval.status === 'pending');
+            return pipelineApprovals;
 
-            // Check if there are any pending approvals
-            const hasPendingApprovals = pipelineApprovals.some((approval: any) => approval.status === 'pending');
-            if (hasPendingApprovals) {
-                return approvals;
-            } else {
-                return [];
-            }
         } catch (error: unknown) {
             this.handleError(error);
             return [];
@@ -450,8 +444,6 @@ export class PipelineService {
     }
 
     async rejectPipeline(personalAccessToken: string, approvalIdId: string, azureSelectedDevOpsProject: string) {
-        const pipelineApproval = await this.getPipelineApproval(personalAccessToken, azureSelectedDevOpsProject, approvalIdId);
-
         const confirm = await vscode.window.showWarningMessage(
             `Are you sure you want to reject this pipeline?`,
             { modal: true },
