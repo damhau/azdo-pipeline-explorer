@@ -20,7 +20,9 @@ export class ConfigurationService {
             azureDevOpsApiVersion: config.get<string>('azureDevOpsApiVersion') || '7.1',
             userAgent: config.get<string>('userAgent') || `azure-devops-pipeline-explorer-extension/1.0 (${os.platform()}; ${os.release()})`,
             azureSelectedDevOpsProject: config.get<string>('userAgent') || '',
+            azureDevopsTerraformExtensionName: config.get<string>('azureDevopsTerraformExtensionName') || 'charleszipp.azure-pipelines-tasks-terraform',
             azureDevOpsPipelineMaxItems: config.get<number>('azureDevOpsPipelineMaxItems') || 20
+
         };
     }
 
@@ -147,5 +149,14 @@ export class ConfigurationService {
     async clearFilteredPipelineDefinitionsState(): Promise<void> {
         await this.context?.globalState.update('azureDevOpsFilteredPipelineDefinitions', undefined);
     }
+
+    async updateAzureDevopsTerraformExtension(value: boolean) {
+        await this.context?.globalState.update('updateAzureDevopsTerraformExtension', value);
+    }
+
+    getAzureDevopsTerraformExtension(): string[] | undefined {
+        return this.context?.globalState.get<string[]>('azureDevOpsFilteredPipelineDefinitions');
+    }
+
 
 }

@@ -20,10 +20,10 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     // Load configuration
-    const { azureDevOpsOrgUrl, azureDevOpsApiVersion, userAgent } = configurationService.getConfiguration();
+    const { azureDevOpsOrgUrl, azureDevOpsApiVersion, userAgent, azureDevopsTerraformExtensionName} = configurationService.getConfiguration();
 
-    console.debug(`Azure Devops Pipeline Explorer Started`);
-    console.debug(`Azure DevOps URL: ${azureDevOpsOrgUrl}`);
+    console.log(`Azure Devops Pipeline Explorer Started`);
+    console.log(`Azure DevOps URL: ${azureDevOpsOrgUrl}`);
 
     // Instantiate class of pipeline service (for api call) and pipelineProvider for vs code treeview
     const pipelineService = new PipelineService(azureDevOpsOrgUrl, userAgent, azureDevOpsApiVersion);
@@ -32,8 +32,15 @@ export async function activate(context: vscode.ExtensionContext) {
     const projectService = new ProjectService(azureDevOpsOrgUrl, userAgent, azureDevOpsApiVersion);
     const projectProvider = new ProjectProvider(secretManager, projectService, configurationService);
 
+    // Check if Terraform Azure Devops extension is installed
+    const pat = await secretManager.getSecret('PAT');
+    const isExtensionInstalled = await pipelineService.isAzureDevopsTerraformExtensionInstalled(pat!, azureDevopsTerraformExtensionName.split(".")[0], azureDevopsTerraformExtensionName.split(".")[1]);
+    vscode.commands.executeCommand('setContext', 'azureDevOpsExtensionInstalled', isExtensionInstalled);
+    await configurationService.updateAzureDevopsTerraformExtension(isExtensionInstalled);
+    console.log(`Azure Devops Terraform Extension ${azureDevopsTerraformExtensionName} is installed`);
 
 
+    // Create tree views
     vscode.window.createTreeView('projectExplorer', {
         treeDataProvider: projectProvider,
         showCollapseAll: true
@@ -50,14 +57,12 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 
     await projectProvider.refresh();
+
     context.subscriptions.push(
         vscode.commands.registerCommand('azurePipelinesExplorer.refreshPipeline', () => pipelineProvider.refresh()),
         vscode.commands.registerCommand('azurePipelinesExplorer.refreshPipelineDefinition', () => pipelineDefinitionProvider.refresh()),
         vscode.commands.registerCommand('azurePipelinesExplorer.configure', () => configurationService.updateConfiguration()),
         vscode.commands.registerCommand('azurePipelinesExplorer.updatePat', () => configurationService.updatePat()),
-        // vscode.commands.registerCommand('azurePipelinesExplorer.showLogDetails', async (azureDevOpsPAT: string, logURL: string) => {
-        //     await pipelineService.showLogDetails(azureDevOpsPAT, logURL);
-        // }),
         vscode.commands.registerCommand('azurePipelinesExplorer.showLogDetails', async (azureDevOpsPAT: string, logURL: string, taskId: string) => {
             await pipelineService.showLogDetailsInWebview(azureDevOpsPAT, logURL, taskId);
         }),
@@ -72,35 +77,42 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('azurePipelinesExplorer.selectProject', async (projectId: string) => {
             await configurationService.updateSelectedProjectInGlobalState(projectId);
             await configurationService.clearFilteredPipelineDefinitionsState();
-            await pipelineDefinitionProvider.refresh();
+            pipelineDefinitionProvider.refresh();
             pipelineProvider.refresh();
         }),
         vscode.commands.registerCommand('azurePipelinesExplorer.selectProjectsToShow', async () => {
             await projectProvider.promptForProjectSelection();
-            await pipelineDefinitionProvider.refresh();
-            await pipelineProvider.refresh();
+            pipelineDefinitionProvider.refresh();
+            pipelineProvider.refresh();
         }),
         vscode.commands.registerCommand('azurePipelinesExplorer.selectPipelineDefinitionsToShow', async () => {
             await pipelineDefinitionProvider.promptForFolderSelection();
-            await pipelineDefinitionProvider.refresh();
+            pipelineDefinitionProvider.refresh();
         }),
-        vscode.commands.registerCommand('azurePipelinesExplorer.startPipeline', async (pipeline) => {
+        vscode.commands.registerCommand('azurePipelinesExplorer.startPipeline', async (pipelineDefinition) => {
             const pat = await secretManager.getSecret('PAT');
-            await pipelineService.startPipeline(pat!, pipeline.pipelineId, configurationService.getSelectedProjectFromGlobalState()!);
+            await pipelineService.startPipeline(pat!, pipelineDefinition.pipelineId, configurationService.getSelectedProjectFromGlobalState()!);
             pipelineProvider.refresh();
 
         }),
-        vscode.commands.registerCommand('azurePipelinesExplorer.stopPipeline', async (pipelineDefinition) => {
+        vscode.commands.registerCommand('azurePipelinesExplorer.stopPipeline', async (pipeline) => {
             const pat = await secretManager.getSecret('PAT');
-            await pipelineService.stopPipeline(pat!, pipelineDefinition.element_id, configurationService.getSelectedProjectFromGlobalState()!);
+            await pipelineService.stopPipeline(pat!, pipeline.element_id, configurationService.getSelectedProjectFromGlobalState()!);
             pipelineProvider.refresh();
 
         }),
-        vscode.commands.registerCommand('azurePipelinesExplorer.showTerraformPlan', async (pipelineDefinition) => {
+        vscode.commands.registerCommand('azurePipelinesExplorer.showTerraformPlan', async (pipeline) => {
             const pat = await secretManager.getSecret('PAT');
-            await pipelineService.showTerraformPlanInWebview(pat!, pipelineDefinition.element_id, configurationService.getSelectedProjectFromGlobalState()!);
+            await pipelineService.showTerraformPlanInWebview(pat!, pipeline.element_id, configurationService.getSelectedProjectFromGlobalState()!);
 
         }),
+		vscode.commands.registerCommand('azurePipelinesExplorer.copyTerraformPlanUrl', async (pipeline) => {
+			const project = configurationService.getSelectedProjectFromGlobalState();
+			const prUrl = `${azureDevOpsOrgUrl}/${project}/_build/results?buildId=${pipeline.element_id}&view=charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-plan`;
+			await vscode.env.clipboard.writeText(prUrl);
+		}),
+
+
 		vscode.commands.registerCommand('azurePipelinesExplorer.approvePipeline', async (pipeline) => {
             const pat = await secretManager.getSecret('PAT');
             await pipelineService.approvePipeline(pat!, pipeline.approvalId, configurationService.getSelectedProjectFromGlobalState()!);

@@ -130,6 +130,11 @@
         "command": "azurePipelinesExplorer.openPipelineInBrowser",
         "title": "Open Pipeline in Browser",
         "icon": "$(link-external)"
+      },
+      {
+        "command": "azurePipelinesExplorer.copyTerraformPlanUrl",
+        "title": "Copy Terraform Plan Url",
+        "icon": "$(copy)"
       }
     ],
     "menus": {
@@ -173,37 +178,37 @@
         },
         {
           "command": "azurePipelinesExplorer.showTerraformPlan",
-          "when": "view == pipelineExplorer && viewItem == runningPipeline",
+          "when": "view == pipelineExplorer && viewItem =~ /.*plan.*/ && azureDevOpsExtensionInstalled == true",
+          "group": "inline@1"
+        },
+        {
+          "command": "azurePipelinesExplorer.copyTerraformPlanUrl",
+          "when": "view == pipelineExplorer && viewItem =~ /.*plan.*/ && azureDevOpsExtensionInstalled == true",
           "group": "inline@1"
         },
         {
           "command": "azurePipelinesExplorer.stopPipeline",
-          "when": "view == pipelineExplorer && viewItem == runningPipeline",
+          "when": "view == pipelineExplorer && viewItem =~ /^runningPipeline.*/",
           "group": "inline@2"
         },
         {
           "command": "azurePipelinesExplorer.openPipelineInBrowser",
-          "when": "view == pipelineExplorer && viewItem == runningPipeline",
+          "when": "view == pipelineExplorer && viewItem =~ /^runningPipeline.*/",
           "group": "inline@3"
         },
         {
-          "command": "azurePipelinesExplorer.showTerraformPlan",
-          "when": "view == pipelineExplorer && viewItem == pipeline",
-          "group": "inline@1"
-        },
-        {
           "command": "azurePipelinesExplorer.openPipelineInBrowser",
-          "when": "view == pipelineExplorer && viewItem == pipeline",
+          "when": "view == pipelineExplorer && viewItem =~ /^pipeline.*/",
           "group": "inline@2"
         },
         {
           "command": "azurePipelinesExplorer.rejectPipeline",
-          "when": "view == pipelineExplorer && viewItem == approval",
+          "when": "view == pipelineExplorer && viewItem =~ /^approval.*/",
           "group": "inline@1"
         },
         {
           "command": "azurePipelinesExplorer.approvePipeline",
-          "when": "view == pipelineExplorer && viewItem == approval",
+          "when": "view == pipelineExplorer && viewItem =~ /^approval.*/",
           "group": "inline@1"
         },
         {
@@ -242,7 +247,13 @@
           "type": "number",
           "default": 20,
           "description": "Number of pipeline run to get from Azure Devops API."
+        },
+        "azurePipelinesExplorer.azureDevopsTerraformExtensionName": {
+          "type": "string",
+          "default": "",
+          "description": "Name of the Azure Devops Terraform Extension that provide a Terraform plan output"
         }
+
       }
     }
   },

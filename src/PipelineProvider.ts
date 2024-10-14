@@ -33,14 +33,17 @@ class PipelineItem extends vscode.TreeItem {
             startTime?: string;
             requestedBy?: string;
             repository?: string;
+            terraformPlan?: boolean;
         }
 
     ) {
         super(label, collapsibleState);
         this.iconPath = this.getIconForResult(result, status, type);
-        this.contextValue = this.getContextValue(result, status, type, approvalId);
+        this.contextValue = this.getContextValue(result, status, type, approvalId, details);
         if (type === "pipeline") {
-            this.tooltip = `Requested by: ${this.details?.["requestedBy"]}\nRepository: ${this.details?.["repository"]}\nSource Branch: ${this.details?.["sourceBranch"]}\nCommit: ${this.details?.["sourceVersion"]}\nstart Time: ${this.details?.["startTime"]}`;
+            this.tooltip = `Requested by: ${this.details?.["requestedBy"]}\nRepository: ${this.details?.["repository"]}\nSource Branch: ${this.details?.["sourceBranch"]}\nCommit: ${this.details?.["sourceVersion"]}\nstart Time: ${this.details?.["startTime"]}\nContext: ${this.contextValue}\terraformPlan: ${this.details?.["terraformPlan"]}`;
+        }else{
+            this.tooltip = `Context: ${this.contextValue}`;
         }
 
     }
@@ -68,11 +71,25 @@ class PipelineItem extends vscode.TreeItem {
         }
     }
 
-    private getContextValue(result?: string, status?: string, type?: string, approvalId?: any) {
+    private getContextValue(result?: string, status?: string, type?: string, approvalId?: any, details?: any){
         if (status === "pending" && approvalId !== undefined) {
             return "approval";
+
+
         } else if (status === "inProgress") {
-            return "runningPipeline";
+
+            if (details?.["terraformPlan"]){
+                return "runningPipeline-plan";
+            }else{
+                return "runningPipeline";
+            }
+        } else if (type === "pipeline") {
+
+            if (details?.["terraformPlan"]){
+                return "pipeline-plan";
+            }else{
+                return "pipeline";
+            }
         }else{
             return type;
         }
@@ -143,7 +160,6 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
         if (!element) {
 
             const pipelines = await this.pipelineService.getPipelines(pat!, azureDevOpsPipelineMaxItems, azureDevOpsSelectedProject!);
-
             const anyInProgress = pipelines.some((pipeline: any) => pipeline.status === 'inProgress');
 
             if (!anyInProgress && this.intervalId) {
@@ -155,8 +171,21 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
                 this.startAutoRefresh();
             }
 
+            const allPipelines = await Promise.all(pipelines.map(async (pipeline: any) => {
+                let terraformPlanUrl: string | undefined;
+                let terraformPlan: boolean = false;
+                if (await this.configurationService.getAzureDevopsTerraformExtension()){
+                    terraformPlanUrl = await this.pipelineService.getPipelineTerraformPlanUrl(pat!, pipeline.id, azureDevOpsSelectedProject!);
 
-            return pipelines.map((pipeline: any) => {
+                    if (terraformPlanUrl){
+                        terraformPlan = true;
+                    }else{
+
+                        terraformPlan = false;
+
+                    }
+                }
+
                 return new PipelineItem(
                     pipeline.id, // element_id
                     `${pipeline.definition.name} - ${pipeline.id}`, // label
@@ -173,11 +202,19 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
                         "sourceVersion": pipeline.sourceVersion,
                         "startTime": pipeline.startTime,
                         "requestedBy": pipeline.requestedBy.displayName,
-                        "repository": pipeline.repository.name
+                        "repository": pipeline.repository.name,
+                        "terraformPlan": terraformPlan // Add terraformPlanUrl to details
                     }
-
                 );
-            });
+            }));
+
+            return allPipelines;
+
+
+
+
+
+
 
 
 

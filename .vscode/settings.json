@@ -10,8 +10,11 @@
     "typescript.tsc.autoDetect": "off",
     "editor.insertSpaces": false,
     "cSpell.words": [
+        "extensionmanagement",
         "filecontents",
         "Filteredproject",
+        "installedextensionsbyname",
+        "paramater",
         "tempallowed",
         "Uncategorized"
     ],

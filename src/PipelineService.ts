@@ -3,6 +3,7 @@ import axiosRetry from 'axios-retry';
 import * as vscode from 'vscode';
 import { parse, stringify } from 'yaml';
 import AnsiToHtml from 'ansi-to-html';
+import { debug } from 'console';
 
 // import YAML from 'yaml';
 
@@ -33,7 +34,6 @@ export class PipelineService {
                     'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
                 }
             });
-            console.log(response);
             if (response.request._redirectable._redirectCount > 0) {
                 await vscode.window.showErrorMessage(`An error occurred while fetching pipeline data. There is a redirect in the response, probably a SAML or Openid authentication is configured on the Azure Devops API`);
             } else {
@@ -184,28 +184,7 @@ export class PipelineService {
         }
     }
 
-    async getPipelineComponent(yaml: string) {
-        const yamlContent = parse(yaml, { version: "1.1" });
-        const pipelineParameters = yamlContent.parameters;
-
-        if (!pipelineParameters) {
-            return [];
-        } else {
-            if (pipelineParameters[0].name === "component") {
-
-                return pipelineParameters[0].values;
-
-            } else {
-                return [];
-
-            }
-
-
-        }
-
-    }
-
-    async getPipelineEnvironment(yaml: string) {
+    async getPipelineParameters(yaml: string, paramaterName: string) {
         const yamlContent = parse(yaml, { version: "1.1" });
 
         const pipelineParameters = yamlContent.parameters;
@@ -213,16 +192,14 @@ export class PipelineService {
         if (!pipelineParameters) {
             return [];
         } else {
-            if (pipelineParameters[1].name === "environment") {
 
-                return pipelineParameters[1].values;
+            for (let i = 0; i < pipelineParameters.length; i++) {
 
-            } else {
-                return [];
-
+                if (pipelineParameters[i].name === paramaterName) {
+                    return pipelineParameters[i].values;
+                }
             }
-
-
+            return [];
         }
 
     }
@@ -274,11 +251,10 @@ export class PipelineService {
         const repositoryId = pipelineDefinition.repository.id;
         const pipelineYamlFile = pipelineDefinition.process.yamlFilename;
 
-
         // Get the parameters from the pipeline file
         const pipelineYamlFileContent = await this.getFileContents(personalAccessToken, azureSelectedDevOpsProject, repositoryId, pipelineYamlFile);
-        const pipelineComponents = await this.getPipelineComponent(pipelineYamlFileContent);
-        const pipelineEnvironments = await this.getPipelineEnvironment(pipelineYamlFileContent);
+        const pipelineComponents = await this.getPipelineParameters(pipelineYamlFileContent, "component");
+        const pipelineEnvironments = await this.getPipelineParameters(pipelineYamlFileContent, "environment");
 
         // Get the branches for the repository
         const branches = await this.getRepositoryBranches(personalAccessToken, repositoryId, azureSelectedDevOpsProject);
@@ -564,7 +540,7 @@ export class PipelineService {
     }
 
 
-    async getPipelineTerraformPlanId(personalAccessToken: string, buildId: string, azureSelectedDevOpsProject: string): Promise<any> {
+    async getPipelineTerraformPlanUrl(personalAccessToken: string, buildId: string, azureSelectedDevOpsProject: string): Promise<any> {
         const url = `${this.azureDevOpsOrgUrl}/${azureSelectedDevOpsProject}/_apis/build/builds/${buildId}/attachments/terraform-plan-results?api-version=${this.azureDevOpsApiVersion}`;
         try {
             const response = await axios.get(url, {
@@ -573,11 +549,37 @@ export class PipelineService {
                     'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
                 }
             });
-            return response.data.value[0]._links.self.href;
+            if (response.data.count === 0) {
+                return false;
+
+            }else{
+                return response.data.value[0]._links.self.href;
+
+            }
+
         } catch (error: unknown) {
             return this.handleError(error);
         }
     }
+
+    async isAzureDevopsTerraformExtensionInstalled(personalAccessToken: string, publisherName: string, extensionName: string): Promise<any> {
+
+        const url = `${this.azureDevOpsOrgUrl}/_apis/extensionmanagement/installedextensionsbyname/${publisherName}/${extensionName}?api-version=7.1-preview.1`;
+
+        try {
+            await axios.get(url, {
+                headers: {
+                    'User-Agent': this.userAgent,
+                    'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
+                }
+            });
+
+            return true;
+        } catch (error: unknown) {
+            return false;
+        }
+    }
+
 
     async fetchTerraformPlanContent(personalAccessToken: string, fileUrl: string): Promise<any> {
         try {
@@ -587,7 +589,7 @@ export class PipelineService {
                     'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
                 }
             });
-            console.debug(response);
+
             return response.data || 'No Terraform plan available';
         } catch (error: unknown) {
             return 'No Terraform plan available';
@@ -714,30 +716,32 @@ export class PipelineService {
 
     async showTerraformPlanInWebview(azureDevOpsPAT: string, buildId: string, azureSelectedDevOpsProject: string){
         // Fetch the log details
-        console.debug("showTerraformPlanInWebview");
-        const terraformPlanUrl = await this.getPipelineTerraformPlanId(azureDevOpsPAT, buildId, azureSelectedDevOpsProject);
+        const terraformPlanUrl = await this.getPipelineTerraformPlanUrl(azureDevOpsPAT, buildId, azureSelectedDevOpsProject);
 
-        console.debug("terraformPlanUrl" + terraformPlanUrl);
-        //console.debug(terraformPlanUrl);
-        //const result = await this.fetchFileContent(terraformPlanUrl);
+        if (terraformPlanUrl) {
+            this.fetchTerraformPlanContent(azureDevOpsPAT, terraformPlanUrl).then((data) => {
 
-        this.fetchTerraformPlanContent(azureDevOpsPAT, terraformPlanUrl).then((data) => {
-            console.debug(data);
-            // Create a new Webview panel
-            const panel = vscode.window.createWebviewPanel(
-                'pipelineLogs',
-                `Terraform Plan ${buildId}`,
-                vscode.ViewColumn.One,
-                {
-                    enableScripts: true
-                }
-            );
-            const ansiConverter = new AnsiToHtml();
-            const formattedLogs = ansiConverter.toHtml(data);
+                // Create a new Webview panel
+                const panel = vscode.window.createWebviewPanel(
+                    'pipelineLogs',
+                    `Terraform Plan ${buildId}`,
+                    vscode.ViewColumn.One,
+                    {
+                        enableScripts: true
+                    }
+                );
+                const ansiConverter = new AnsiToHtml();
+                const formattedLogs = ansiConverter.toHtml(data);
 
-            // Set the content of the Webview
-            panel.webview.html = this.getTerraformPlanWebviewContent(formattedLogs);
-        });
+                // Set the content of the Webview
+                panel.webview.html = this.getTerraformPlanWebviewContent(formattedLogs);
+            });
+
+        }else{
+            return;
+        }
+
+
         //     // Convert ANSI log output to HTML with color support
 
 
@@ -780,16 +784,12 @@ export class PipelineService {
                     const errorMessage = axiosError.response?.data && typeof axiosError.response.data === 'object' && 'message' in axiosError.response.data
                         ? axiosError.response.data.message
                         : 'An unknown error occurred';
-                    console.debug("error");
-                    console.debug(error);
                     await vscode.window.showErrorMessage(`Error: ${errorMessage}`);
                 }
                 await vscode.window.showErrorMessage(`Error: ${axiosError.message}`);
             }
 
         } else {
-            console.debug("error");
-            console.debug(error);
             await vscode.window.showErrorMessage(`An unknown error occurred: ${error}`);
         }
         return [];
