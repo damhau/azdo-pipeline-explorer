@@ -1,3 +1,10 @@
+# [0.14.0](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.13.1...v0.14.0) (2024-10-14)
+
+
+### Features
+
+* add copy TF plan to clipboard and some cleanup ([e3b85cf](https://github.com/damhau/azdo-pipeline-explorer/commit/e3b85cff4cec5954f7242011a819d7b9ae38254f))
+
 ## [0.13.1](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.13.0...v0.13.1) (2024-10-11)
 
 
