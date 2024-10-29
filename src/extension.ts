@@ -20,7 +20,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     // Load configuration
-    const { azureDevOpsOrgUrl, azureDevOpsApiVersion, userAgent, azureDevopsTerraformExtensionName} = configurationService.getConfiguration();
+    const { azureDevOpsOrgUrl, azureDevOpsApiVersion, userAgent, azureDevopsTerraformExtensionName } = configurationService.getConfiguration();
 
     console.log(`Azure Devops Pipeline Explorer Started`);
     console.log(`Azure DevOps URL: ${azureDevOpsOrgUrl}`);
@@ -96,44 +96,68 @@ export async function activate(context: vscode.ExtensionContext) {
 
         }),
         vscode.commands.registerCommand('azurePipelinesExplorer.stopPipeline', async (pipeline) => {
+            if (!pipeline || !pipeline.element_id) {
+                showMessage('Pipeline data is unavailable or still loading. Please try again later.');
+                return;
+            }
             const pat = await secretManager.getSecret('PAT');
             await pipelineService.stopPipeline(pat!, pipeline.element_id, configurationService.getSelectedProjectFromGlobalState()!);
             pipelineProvider.refresh();
 
         }),
         vscode.commands.registerCommand('azurePipelinesExplorer.showTerraformPlan', async (pipeline) => {
+            if (!pipeline || !pipeline.element_id) {
+                showMessage('Pipeline data is unavailable or still loading. Please try again later.');
+                return;
+            }
             const pat = await secretManager.getSecret('PAT');
             await pipelineService.showTerraformPlanInWebview(pat!, pipeline.element_id, configurationService.getSelectedProjectFromGlobalState()!);
 
         }),
-		vscode.commands.registerCommand('azurePipelinesExplorer.copyTerraformPlanUrl', async (pipeline) => {
-			const project = configurationService.getSelectedProjectFromGlobalState();
-			const prUrl = `${azureDevOpsOrgUrl}/${project}/_build/results?buildId=${pipeline.element_id}&view=charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-plan`;
-			await vscode.env.clipboard.writeText(prUrl);
-		}),
+        vscode.commands.registerCommand('azurePipelinesExplorer.copyTerraformPlanUrl', async (pipeline) => {
+            if (!pipeline || !pipeline.element_id) {
+                showMessage('Pipeline data is unavailable or still loading. Please try again later.');
+                return;
+            }
+            const project = configurationService.getSelectedProjectFromGlobalState();
+            const prUrl = `${azureDevOpsOrgUrl}/${project}/_build/results?buildId=${pipeline.element_id}&view=charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-plan`;
+            await vscode.env.clipboard.writeText(prUrl);
+        }),
 
 
-		vscode.commands.registerCommand('azurePipelinesExplorer.approvePipeline', async (pipeline) => {
+        vscode.commands.registerCommand('azurePipelinesExplorer.approvePipeline', async (pipeline) => {
+            if (!pipeline || !pipeline.element_id) {
+                showMessage('Pipeline data is unavailable or still loading. Please try again later.');
+                return;
+            }
             const pat = await secretManager.getSecret('PAT');
             await pipelineService.approvePipeline(pat!, pipeline.approvalId, configurationService.getSelectedProjectFromGlobalState()!);
-		}),
-		vscode.commands.registerCommand('azurePipelinesExplorer.rejectPipeline', async (pipeline) => {
+        }),
+        vscode.commands.registerCommand('azurePipelinesExplorer.rejectPipeline', async (pipeline) => {
+            if (!pipeline || !pipeline.element_id) {
+                showMessage('Pipeline data is unavailable or still loading. Please try again later.');
+                return;
+            }
             const pat = await secretManager.getSecret('PAT');
             await pipelineService.rejectPipeline(pat!, pipeline.approvalId, configurationService.getSelectedProjectFromGlobalState()!);
 
-		}),
+        }),
         vscode.commands.registerCommand('azurePipelinesExplorer.openProjectInBrowser', () => {
-			const prUrl = `${azureDevOpsOrgUrl}/${configurationService.getSelectedProjectFromGlobalState()!}`;
-			vscode.env.openExternal(vscode.Uri.parse(prUrl));
-		}),
+            const prUrl = `${azureDevOpsOrgUrl}/${configurationService.getSelectedProjectFromGlobalState()!}`;
+            vscode.env.openExternal(vscode.Uri.parse(prUrl));
+        }),
         vscode.commands.registerCommand('azurePipelinesExplorer.openPipelineDefinitionInBrowser', (pipelineDefinition) => {
             const prUrl = `${azureDevOpsOrgUrl}/${configurationService.getSelectedProjectFromGlobalState()!}/_build?definitionId=${pipelineDefinition.pipelineId}`;
-			vscode.env.openExternal(vscode.Uri.parse(prUrl));
-		}),
+            vscode.env.openExternal(vscode.Uri.parse(prUrl));
+        }),
         vscode.commands.registerCommand('azurePipelinesExplorer.openPipelineInBrowser', (pipeline) => {
+            if (!pipeline || !pipeline.element_id) {
+                showMessage('Pipeline data is unavailable or still loading. Please try again later.');
+                return;
+            }
             const prUrl = `${azureDevOpsOrgUrl}/${configurationService.getSelectedProjectFromGlobalState()!}/_build/results?buildId=${pipeline.element_id}&view=results`;
-			vscode.env.openExternal(vscode.Uri.parse(prUrl));
-		}),
+            vscode.env.openExternal(vscode.Uri.parse(prUrl));
+        }),
     );
 
 
@@ -145,6 +169,26 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         }
     });
+}
+
+async function showMessage(message: string) {
+
+    vscode.window.withProgress(
+        {
+            location: vscode.ProgressLocation.Notification,
+            title: message,
+            cancellable: false,
+        },
+        async (progress) => {
+            for (let i = 0; i < 3; i++) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                setTimeout(() => {
+                    progress.report({ increment: i * 10, message: '' });
+                }, 10000);
+            }
+        }
+
+    );
 }
 
 export function deactivate() { }

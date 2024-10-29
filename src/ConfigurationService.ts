@@ -21,7 +21,8 @@ export class ConfigurationService {
             userAgent: config.get<string>('userAgent') || `azure-devops-pipeline-explorer-extension/1.0 (${os.platform()}; ${os.release()})`,
             azureSelectedDevOpsProject: config.get<string>('userAgent') || '',
             azureDevopsTerraformExtensionName: config.get<string>('azureDevopsTerraformExtensionName') || 'charleszipp.azure-pipelines-tasks-terraform',
-            azureDevOpsPipelineMaxItems: config.get<number>('azureDevOpsPipelineMaxItems') || 20
+            azureDevOpsPipelineMaxItems: config.get<number>('azureDevOpsPipelineMaxItems') || 20,
+            azureDevOpsPipelineRefreshInternal: config.get<number>('azureDevOpsPipelineRefreshInternal') || 10000
 
         };
     }
@@ -156,6 +157,24 @@ export class ConfigurationService {
 
     getAzureDevopsTerraformExtension(): string[] | undefined {
         return this.context?.globalState.get<string[]>('azureDevOpsFilteredPipelineDefinitions');
+    }
+
+    cacheProjects(projects: any[]): void {
+        this.context?.globalState.update('cachedProjects', projects);
+        this.context?.globalState.update('projectCacheTimestamp', new Date().getTime()); // Store timestamp
+    }
+
+    getCachedProjects(): any[] | undefined {
+        return this.context?.globalState.get('cachedProjects');
+    }
+
+    getProjectCacheTimestamp(): number | undefined {
+        return this.context?.globalState.get('projectCacheTimestamp');
+    }
+
+    clearCachedProjects(): void {
+        this.context?.globalState.update('cachedProjects', undefined);
+        this.context?.globalState.update('projectCacheTimestamp', undefined);
     }
 
 

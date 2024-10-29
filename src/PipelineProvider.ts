@@ -129,7 +129,9 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
     public isAutoRefreshActive: boolean = false;
 
     refresh(): void {
+        vscode.commands.executeCommand('setContext', 'isPipelineRefreshing', true); // Set context before refresh
         this._onDidChangeTreeData.fire();
+        vscode.commands.executeCommand('setContext', 'isPipelineRefreshing', false); // Set context after refresh
     }
 
     getTreeItem(element: PipelineItem): vscode.TreeItem {
@@ -318,7 +320,9 @@ class PipelineProvider implements vscode.TreeDataProvider<PipelineItem> {
             clearInterval(this.intervalId);
         }
         this.isAutoRefreshActive = true;
-        this.intervalId = setInterval(() => this.refresh(), 10000);
+        const { azureDevOpsPipelineRefreshInternal } = this.configurationService.getConfiguration();
+
+        this.intervalId = setInterval(() => this.refresh(), azureDevOpsPipelineRefreshInternal);
     }
 
     stopAutoRefresh() {
