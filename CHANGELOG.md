@@ -1,3 +1,10 @@
+# [0.15.0](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.14.1...v0.15.0) (2024-10-29)
+
+
+### Features
+
+* add message when resource is busy ([79ce14d](https://github.com/damhau/azdo-pipeline-explorer/commit/79ce14d9e265c9a6a89d73bc87487ac34bd3b7cb))
+
 ## [0.14.1](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.14.0...v0.14.1) (2024-10-14)
 
 
