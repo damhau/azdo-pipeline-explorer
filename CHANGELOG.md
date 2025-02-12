@@ -1,3 +1,10 @@
+## [0.15.1](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.15.0...v0.15.1) (2025-02-12)
+
+
+### Bug Fixes
+
+* add logging and debug ([b9886d2](https://github.com/damhau/azdo-pipeline-explorer/commit/b9886d2aae212a47afd339a19f1f11e3756a3fc8))
+
 # [0.15.0](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.14.1...v0.15.0) (2024-10-29)
 
 
