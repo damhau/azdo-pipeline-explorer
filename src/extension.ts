@@ -7,6 +7,12 @@ import { ConfigurationService } from './ConfigurationService';
 import { PipelineProvider, PipelineDefinitionProvider } from './PipelineProvider';
 import { ProjectProvider } from './ProjectProvider';
 
+import { Logger } from './LoggingService';
+
+const log_debug = Logger.debug;
+const log_info = Logger.info;
+
+
 export async function activate(context: vscode.ExtensionContext) {
 
     const secretManager = new SecretManager(context);
@@ -22,8 +28,8 @@ export async function activate(context: vscode.ExtensionContext) {
     // Load configuration
     const { azureDevOpsOrgUrl, azureDevOpsApiVersion, userAgent, azureDevopsTerraformExtensionName } = configurationService.getConfiguration();
 
-    console.log(`Azure Devops Pipeline Explorer Started`);
-    console.log(`Azure DevOps URL: ${azureDevOpsOrgUrl}`);
+    log_info(`Azure Devops Pipeline Explorer Started`);
+    log_info(`Azure DevOps URL: ${azureDevOpsOrgUrl}`);
 
     // Instantiate class of pipeline service (for api call) and pipelineProvider for vs code treeview
     const pipelineService = new PipelineService(azureDevOpsOrgUrl, userAgent, azureDevOpsApiVersion);
@@ -37,7 +43,8 @@ export async function activate(context: vscode.ExtensionContext) {
     const isExtensionInstalled = await pipelineService.isAzureDevopsTerraformExtensionInstalled(pat!, azureDevopsTerraformExtensionName.split(".")[0], azureDevopsTerraformExtensionName.split(".")[1]);
     vscode.commands.executeCommand('setContext', 'azureDevOpsExtensionInstalled', isExtensionInstalled);
     await configurationService.updateAzureDevopsTerraformExtension(isExtensionInstalled);
-    console.log(`Azure Devops Terraform Extension ${azureDevopsTerraformExtensionName} is installed`);
+
+    log_debug(`Azure Devops Terraform Extension ${azureDevopsTerraformExtensionName} is installed`);
 
 
     // Create tree views

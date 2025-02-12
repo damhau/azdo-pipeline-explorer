@@ -20,17 +20,17 @@ export class ProjectService {
     async listProjects(personalAccessToken: string): Promise<any[]> {
         const url = `${this.azureDevOpsOrgUrl}/_apis/projects?api-version=${this.azureDevOpsApiVersion}`;
 
-		try{
+        try {
 
-			const response = await axios.get(url, {
-				headers: {
-					'User-Agent': this.userAgent,
-					'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
-				}
-			});
-			return response.data.value;
+            const response = await axios.get(url, {
+                headers: {
+                    'User-Agent': this.userAgent,
+                    'Authorization': `Basic ${Buffer.from(':' + personalAccessToken).toString('base64')}`
+                }
+            });
+            return response.data.value;
         } catch (error: unknown) {
-			this.handleError(error);
+            this.handleError(error);
             return [];
         }
     }
@@ -40,7 +40,22 @@ export class ProjectService {
         if (axios.isAxiosError(error)) {
             const axiosError = error as AxiosError;
             if (axiosError.response && axiosError.response.status === 401) {
-                await vscode.window.showErrorMessage('Authentication failed: Invalid or expired Personal Access Token (PAT). Please update your PAT.');
+                // await vscode.window.showErrorMessage('Authentication failed: Invalid or expired Personal Access Token (PAT). Please update your PAT.');
+
+
+                // await vscode.window.showErrorMessage('Authentication failed: Invalid or expired Personal Access Token (PAT). Please update your PAT.');
+                // Show a message with a button to update the PAT
+                const selection = await vscode.window.showErrorMessage(
+                    'Authentication failed: Invalid or expired Personal Access Token (PAT). Would you like to update your PAT?',
+                    'Update PAT'
+                );
+
+                if (selection === 'Update PAT') {
+                    // Trigger the update PAT command
+                    vscode.commands.executeCommand('azurePipelinesExplorer.updatePat');
+                }
+
+
             } else {
                 await vscode.window.showErrorMessage(`Error: ${axiosError.message}`);
             }

@@ -14,7 +14,6 @@
     "Other"
   ],
   "publisher": "DHC",
-  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "viewsContainers": {
@@ -251,6 +250,11 @@
           "type": "string",
           "default": "",
           "description": "Name of the Azure Devops Terraform Extension that provide a Terraform plan output"
+        },
+        "azurePipelinesExplorer.enableDebugLogs": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable debug logs for troubleshooting."
         }
       }
     }
