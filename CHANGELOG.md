@@ -1,3 +1,10 @@
+## [0.15.2](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.15.1...v0.15.2) (2025-07-03)
+
+
+### Bug Fixes
+
+* change icon ([adc7df1](https://github.com/damhau/azdo-pipeline-explorer/commit/adc7df18e9d4b6e0d077b7bca706dfeb95f74308))
+
 ## [0.15.1](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.15.0...v0.15.1) (2025-02-12)
 
 
