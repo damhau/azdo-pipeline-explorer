@@ -3,7 +3,7 @@
   "displayName": "Azure Devops Pipeline Explorer",
   "description": "This Visual Studio Code extension connects to your Azure DevOps organization and allows you to view the status of the last pipelines and their logs, directly from the VS Code interface.",
   "version": "0.10.0",
-  "icon": "images/azdopipeline.png",
+  "icon": "images/icon.png",
   "repository": {
     "url": "https://github.com/damhau/azdo-pipeline-explorer"
   },
