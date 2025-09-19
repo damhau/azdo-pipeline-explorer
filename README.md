@@ -1,4 +1,4 @@
-# Azure DevOps Pipeline Explorer
+# Pipeline Explorer for Azure DevOps 
 
 - [Azure DevOps Pipeline Explorer](#azure-devops-pipeline-explorer)
   - [Introduction](#introduction)
