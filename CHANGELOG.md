@@ -1,3 +1,10 @@
+# [0.17.0](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.16.1...v0.17.0) (2025-09-19)
+
+
+### Features
+
+* change extension name ([c22a664](https://github.com/damhau/azdo-pipeline-explorer/commit/c22a664a185a6c9c0a9379d7f830fcafdf6b278d))
+
 ## [0.16.1](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.16.0...v0.16.1) (2025-09-19)
 
 
