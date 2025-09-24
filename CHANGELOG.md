@@ -1,3 +1,10 @@
+## [0.17.1](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.17.0...v0.17.1) (2025-09-24)
+
+
+### Bug Fixes
+
+* change name and republilshj ([fafcf66](https://github.com/damhau/azdo-pipeline-explorer/commit/fafcf66f30340a170f8a5134287215067e8c278f))
+
 # [0.17.0](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.16.1...v0.17.0) (2025-09-19)
 
 
