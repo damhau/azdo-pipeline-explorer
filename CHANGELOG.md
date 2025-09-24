@@ -1,3 +1,10 @@
+## [0.17.4](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.17.3...v0.17.4) (2025-09-24)
+
+
+### Bug Fixes
+
+* new bundleed version ([c589345](https://github.com/damhau/azdo-pipeline-explorer/commit/c5893456648071fb9ff328b5a25673f10ff6014a))
+
 ## [0.17.3](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.17.2...v0.17.3) (2025-09-24)
 
 
