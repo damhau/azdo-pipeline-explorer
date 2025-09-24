@@ -14,7 +14,7 @@
     "Other"
   ],
   "publisher": "DHC",
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
@@ -260,7 +260,8 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "build": "node scripts/build.mjs",
+    "vscode:prepublish": "npm run build",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile&& npm run lint",
@@ -275,6 +276,7 @@
     "@typescript-eslint/parser": "^7.11.0",
     "@vscode/test-cli": "^0.0.9",
     "@vscode/test-electron": "^2.4.0",
+    "esbuild": "^0.23.1",
     "eslint": "^8.57.0",
     "typescript": "^5.4.5"
   },

@@ -28,6 +28,10 @@ jobs:
         with:
           node-version: 20
       - run: npm install --save-dev semantic-release semantic-release-vsce @semantic-release/changelog @semantic-release/git
+      
+      - name: Install deps
+        run: npm ci
+
       - run: npx semantic-release
         env:
           # GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
