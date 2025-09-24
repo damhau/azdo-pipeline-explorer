@@ -1,3 +1,10 @@
+## [0.17.3](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.17.2...v0.17.3) (2025-09-24)
+
+
+### Bug Fixes
+
+* name ([320cb34](https://github.com/damhau/azdo-pipeline-explorer/commit/320cb34cb1caf5f00853d0868032afbea971c124))
+
 ## [0.17.2](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.17.1...v0.17.2) (2025-09-24)
 
 
