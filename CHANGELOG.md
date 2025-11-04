@@ -1,3 +1,10 @@
+## [0.17.5](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.17.4...v0.17.5) (2025-11-04)
+
+
+### Bug Fixes
+
+* redeploy extension ([407053d](https://github.com/damhau/azdo-pipeline-explorer/commit/407053d1366cb1eb41dab9c6bf3c12970f965764))
+
 ## [0.17.4](https://github.com/damhau/azdo-pipeline-explorer/compare/v0.17.3...v0.17.4) (2025-09-24)
 
 
