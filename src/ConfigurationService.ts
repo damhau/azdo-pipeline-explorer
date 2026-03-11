@@ -1,4 +1,4 @@
-// src/ConfigurationService.ts
+// src/ConfigurationService.ts - test
 import * as vscode from 'vscode';
 import * as os from 'os';
 
